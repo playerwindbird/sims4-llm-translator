@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import type { ParsedItem } from "@/lib/xml-utils";
 import type { ProjectSettings } from "@/hooks/use-project-state";
 import { Copy, Check, Play, Loader2 } from "lucide-react";
@@ -54,55 +55,77 @@ export function TranslationControls({
         }
     };
 
+    const [progress, setProgress] = useState({ current: 0, total: 0 });
+
     const handleAutoTranslate = async () => {
         setIsTranslating(true);
-        // This would be the actual API call logic
-        // For now, we'll mock it or just set a timeout if we want to simulate
-        // But since this is client side only and we want to use the API key provided...
-
-        // TODO: Implement actual LLM call here or in a helper
-        // Since we are running in browser, we can call fetch directly.
-
-        // For this step, I will just simulate a delay and then "mock" translation if it was real?
-        // Or I should implement the call. 
-        // The user said "Auto mode needs API Key and URL... tool calls it... auto extracts JSON".
+        setProgress({ current: 0, total: 0 });
 
         try {
-            const sourceJson = generateSourceJson();
-            const prompt = `Translate the following JSON values to the target language (Chinese). Keep the keys unchanged. Return ONLY the JSON.\n\n${sourceJson}`;
+            const batchSize = settings.batchSize || 50;
+            const totalItems = items.length;
+            const totalBatches = Math.ceil(totalItems / batchSize);
 
-            const response = await fetch(`${settings.apiBaseUrl}/chat/completions`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${settings.apiKey}`
-                },
-                body: JSON.stringify({
-                    model: settings.model,
-                    messages: [
-                        { role: "system", content: "You are a translator. Translate the values to Chinese. Return strictly valid JSON." },
-                        { role: "user", content: prompt }
-                    ]
-                })
-            });
+            setProgress({ current: 0, total: totalBatches });
 
-            if (!response.ok) {
-                const err = await response.text();
-                throw new Error(err);
+            for (let i = 0; i < totalBatches; i++) {
+                const start = i * batchSize;
+                const end = Math.min(start + batchSize, totalItems);
+                const batchItems = items.slice(start, end);
+
+                // Skip if all items in this batch are already translated? 
+                // User didn't ask for this, but it saves tokens. 
+                // For now, adhere to "translate everything" or simple logic to avoid complexity unless requested.
+                // However, the prompt is just "translate".
+                // I will just translate the batch.
+
+                const batchObj: Record<string, string> = {};
+                batchItems.forEach((item) => {
+                    batchObj[item.id] = item.source;
+                });
+
+                const sourceJson = JSON.stringify(batchObj, null, 2);
+
+                const prompt = `Translate the following JSON values to the target language (Chinese). Keep the keys unchanged. Return ONLY the JSON.\n\n${sourceJson}`;
+
+                const response = await fetch(`${settings.apiBaseUrl}/chat/completions`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${settings.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: settings.model,
+                        messages: [
+                            { role: "system", content: "You are a translator. Translate the values to Chinese. Return strictly valid JSON." },
+                            { role: "user", content: prompt }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.text();
+                    throw new Error(`Batch ${i + 1}/${totalBatches} failed: ${err}`);
+                }
+
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+
+                // Extract JSON from content
+                const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/{[\s\S]*}/);
+                const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : content;
+
+                onApplyTranslations(jsonStr);
+
+                // Update progress after successful batch
+                setProgress({ current: i + 1, total: totalBatches });
             }
 
-            const data = await response.json();
-            const content = data.choices[0].message.content;
-
-            // Extract JSON from content (it might have markdown code blocks)
-            const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || content.match(/{[\s\S]*}/);
-            const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : content;
-
-            onApplyTranslations(jsonStr);
         } catch (e: any) {
             alert("翻译失败: " + e.message);
         } finally {
             setIsTranslating(false);
+            setProgress({ current: 0, total: 0 });
         }
     };
 
@@ -187,6 +210,35 @@ export function TranslationControls({
                                 />
                             </div>
                         </div>
+
+                        <div className="space-y-3 pt-2">
+                            <div className="flex items-center justify-between">
+                                <Label>一次性处理条目数</Label>
+                                <span className="text-sm font-mono text-muted-foreground">{settings.batchSize}</span>
+                            </div>
+                            <Slider
+                                min={1}
+                                max={100}
+                                step={1}
+                                value={settings.batchSize}
+                                onChange={(e) => onUpdateSettings({ batchSize: Number(e.target.value) })}
+                            />
+                        </div>
+
+                        {isTranslating && (
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-xs text-muted-foreground">
+                                    <span>进度</span>
+                                    <span>{progress.current} / {progress.total} 批次</span>
+                                </div>
+                                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-primary transition-all duration-300"
+                                        style={{ width: `${(progress.current / Math.max(progress.total, 1)) * 100}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <Label>API 密钥</Label>
                             <Input

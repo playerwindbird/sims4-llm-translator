@@ -17,6 +17,7 @@ export interface ProjectSettings {
     apiKey: string;
     apiBaseUrl: string;
     model: string;
+    batchSize: number;
 }
 
 const STORAGE_KEY = "sims4-translator-project";
@@ -30,6 +31,7 @@ export function useProjectState(): ProjectState {
         apiKey: "",
         apiBaseUrl: "https://api.openai.com/v1",
         model: "gpt-3.5-turbo",
+        batchSize: 50,
     });
 
     // Hydrate from localStorage

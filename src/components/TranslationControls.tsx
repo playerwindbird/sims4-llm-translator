@@ -54,10 +54,15 @@ export function TranslationControls({
     const [isTranslating, setIsTranslating] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
-    const dummyRef = useRef(false); // Placeholder for line count matching if needed, or just insert.
     const shouldPauseRef = useRef(false);
     const abortControllerRef = useRef<AbortController | null>(null);
     const abortReasonRef = useRef<"pause" | "reset" | null>(null);
+
+    // Entry count animation state
+    const [entryDelta, setEntryDelta] = useState<{ added: number; removed: number } | null>(null);
+    const [animationKey, setAnimationKey] = useState(0); // Used to force animation restart
+    const entryDeltaTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const prevProcessedCountRef = useRef<number | null>(null);
 
     const generateSourceJson = () => {
         const batchSize = settings.manualBatchSize || 50;
@@ -77,6 +82,51 @@ export function TranslationControls({
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
     };
+
+    // Calculate processed and pending counts
+    const processedCount = Object.values(translations).filter(t => t.trim() !== '').length;
+    const pendingCount = items.length - processedCount;
+
+    // Track changes in processed count and trigger animation
+    useEffect(() => {
+        // Skip animation on initial mount
+        if (prevProcessedCountRef.current === null) {
+            prevProcessedCountRef.current = processedCount;
+            return;
+        }
+
+        const delta = processedCount - prevProcessedCountRef.current;
+
+        if (delta !== 0) {
+            // Clear any existing timeout but keep the accumulated values
+            if (entryDeltaTimeoutRef.current) {
+                clearTimeout(entryDeltaTimeoutRef.current);
+            }
+
+            // Accumulate the delta animation
+            setEntryDelta(prev => {
+                const currentProcessedDelta = prev?.added ?? 0;
+                const currentPendingDelta = prev?.removed ?? 0;
+
+                // delta > 0 means: processed +delta, pending -delta
+                // delta < 0 means: processed +delta (negative), pending -delta (positive since delta is negative)
+                return {
+                    added: currentProcessedDelta + delta,      // processed change
+                    removed: currentPendingDelta - delta       // pending change (opposite of processed)
+                };
+            });
+
+            // Increment animation key to restart CSS animation
+            setAnimationKey(prev => prev + 1);
+
+            // Clear after 2.5 seconds
+            entryDeltaTimeoutRef.current = setTimeout(() => {
+                setEntryDelta(null);
+            }, 2500);
+        }
+
+        prevProcessedCountRef.current = processedCount;
+    }, [processedCount]);
 
     const handleApplyManual = () => {
         try {
@@ -324,6 +374,36 @@ export function TranslationControls({
                                     应用
                                 </Button>
                             </div>
+                        </div>
+                        {/* Entry count status bar */}
+                        <div className="flex items-center justify-center gap-4 py-3 px-4 bg-muted/50 rounded-lg text-sm">
+                            <span className="text-muted-foreground">
+                                已处理条目：<span className="font-mono font-medium text-foreground">{processedCount}</span>
+                                {entryDelta && entryDelta.added > 0 && (
+                                    <span key={`processed-add-${animationKey}`} className="entry-delta-animation ml-2 text-blue-500 font-medium">
+                                        +{entryDelta.added}
+                                    </span>
+                                )}
+                                {entryDelta && entryDelta.added < 0 && (
+                                    <span key={`processed-sub-${animationKey}`} className="entry-delta-animation ml-2 text-red-500 font-medium">
+                                        {entryDelta.added}
+                                    </span>
+                                )}
+                            </span>
+                            <span className="text-muted-foreground">/</span>
+                            <span className="text-muted-foreground">
+                                待处理条目：<span className="font-mono font-medium text-foreground">{pendingCount}</span>
+                                {entryDelta && entryDelta.removed < 0 && (
+                                    <span key={`pending-sub-${animationKey}`} className="entry-delta-animation ml-2 text-green-500 font-medium">
+                                        {entryDelta.removed}
+                                    </span>
+                                )}
+                                {entryDelta && entryDelta.removed > 0 && (
+                                    <span key={`pending-add-${animationKey}`} className="entry-delta-animation ml-2 text-red-500 font-medium">
+                                        +{entryDelta.removed}
+                                    </span>
+                                )}
+                            </span>
                         </div>
                     </div>
                 ) : (

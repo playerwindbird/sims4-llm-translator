@@ -47,6 +47,9 @@ export function TranslationControls({
 
     const [jsonInput, setJsonInput] = useState("");
     const [isCopied, setIsCopied] = useState(false);
+    const [isPromptCopied, setIsPromptCopied] = useState(false);
+    const [isBothCopied, setIsBothCopied] = useState(false);
+    const [manualPrompt, setManualPrompt] = useState(settings.manualPrompt || DEFAULT_PROMPT);
     const [isTranslating, setIsTranslating] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
@@ -77,6 +80,29 @@ export function TranslationControls({
         navigator.clipboard.writeText(generateSourceJson());
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
+    };
+
+    const handleCopyPrompt = () => {
+        navigator.clipboard.writeText(manualPrompt);
+        setIsPromptCopied(true);
+        setTimeout(() => setIsPromptCopied(false), 2000);
+    };
+
+    const handleCopyBoth = () => {
+        const combined = `${manualPrompt}\n\n${generateSourceJson()}`;
+        navigator.clipboard.writeText(combined);
+        setIsBothCopied(true);
+        setTimeout(() => setIsBothCopied(false), 2000);
+    };
+
+    const handleResetManualPrompt = () => {
+        setManualPrompt(DEFAULT_PROMPT);
+        onUpdateSettings({ manualPrompt: DEFAULT_PROMPT });
+    };
+
+    const handleManualPromptChange = (value: string) => {
+        setManualPrompt(value);
+        onUpdateSettings({ manualPrompt: value });
     };
 
     // Calculate processed and pending counts
@@ -289,7 +315,7 @@ export function TranslationControls({
                             disabled={isTranslating}
                             className="h-8"
                         >
-                            自动模式 (LLM)
+                            自动模式
                         </Button>
                     </div>
                 </div>
@@ -321,6 +347,32 @@ export function TranslationControls({
                         </div>
 
                         <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label>提示词模板</Label>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                                    onClick={handleResetManualPrompt}
+                                    disabled={manualPrompt === DEFAULT_PROMPT}
+                                >
+                                    恢复默认
+                                </Button>
+                            </div>
+                            <div className="flex gap-2">
+                                <Textarea
+                                    value={manualPrompt}
+                                    onChange={(e) => handleManualPromptChange(e.target.value)}
+                                    placeholder="输入提示词模板..."
+                                    className="h-28 font-mono text-xs"
+                                />
+                                <Button variant="outline" size="icon" className="h-28 w-12 shrink-0" onClick={handleCopyPrompt}>
+                                    {isPromptCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
                             <Label>1. 复制源 JSON</Label>
                             <div className="flex gap-2">
                                 <Textarea
@@ -333,7 +385,19 @@ export function TranslationControls({
                                     {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                                 </Button>
                             </div>
+                            <Button
+                                variant="secondary"
+                                className="w-full"
+                                onClick={handleCopyBoth}
+                            >
+                                {isBothCopied ? (
+                                    <><Check className="mr-2 h-4 w-4" /> 已复制</>
+                                ) : (
+                                    <><Copy className="mr-2 h-4 w-4" /> 一键复制提示词和源 JSON</>
+                                )}
+                            </Button>
                         </div>
+
                         <div className="space-y-2">
                             <Label>2. 粘贴翻译后的 JSON</Label>
                             <div className="flex gap-2">

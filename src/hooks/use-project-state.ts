@@ -21,6 +21,7 @@ export interface ProjectSettings {
     batchSize: number;
     manualBatchSize: number;
     customPrompt: string;
+    manualPrompt: string;
 }
 
 export const DEFAULT_PROMPT = `你是一个专业的游戏翻译器。请将以下 JSON 中的值翻译成简体中文。
@@ -45,6 +46,7 @@ export function useProjectState(): ProjectState {
         batchSize: 50,
         manualBatchSize: 50,
         customPrompt: DEFAULT_PROMPT,
+        manualPrompt: DEFAULT_PROMPT,
     });
 
     // Hydrate from localStorage

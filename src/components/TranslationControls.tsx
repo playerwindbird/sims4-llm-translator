@@ -373,7 +373,7 @@ export function TranslationControls({
                         </div>
 
                         <div className="space-y-2">
-                            <Label>1. 复制源 JSON</Label>
+                            <Label>复制源 JSON</Label>
                             <div className="flex gap-2">
                                 <Textarea
                                     key={sourceJsonKey}
@@ -399,7 +399,7 @@ export function TranslationControls({
                         </div>
 
                         <div className="space-y-2">
-                            <Label>2. 粘贴翻译后的 JSON</Label>
+                            <Label>粘贴翻译后的 JSON</Label>
                             <div className="flex gap-2">
                                 <Textarea
                                     value={jsonInput}

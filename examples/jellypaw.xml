@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<STBLXMLResources>
+  <Content>
+    <Table instance="01000000ef100e00" group="80000000">
+      <String id="086de50b">
+        <Source>jellypaws - Weighted Tiger Plush</Source>
+        <Dest>jellypaws - Weighted Tiger Plush</Dest>
+      </String>
+      <String id="d98e92c1">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="01000000387470b2" group="80000000">
+      <String id="effdb1e5">
+        <Source>jellypaws - Gator Plushie</Source>
+        <Dest>jellypaws - Gator Plushie</Dest>
+      </String>
+      <String id="f36c732f">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="0100000034930d8f" group="80000000">
+      <String id="1466b6d8">
+        <Source>jellypaws - Tri Dino Plush</Source>
+        <Dest>jellypaws - Tri Dino Plush</Dest>
+      </String>
+      <String id="240b31e2">
+        <Source>by jellypawss on tumblr</Source>
+        <Dest>by jellypawss on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="010000005949f9aa" group="80000000">
+      <String id="dc7a8819">
+        <Source>jellypaws - Giraffe Plush</Source>
+        <Dest>jellypaws - Giraffe Plush</Dest>
+      </String>
+      <String id="0a81076b">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="010000000998034d" group="80000000">
+      <String id="511fde0e">
+        <Source>jellypaws - Bunny Plushie</Source>
+        <Dest>jellypaws - Bunny Plushie</Dest>
+      </String>
+      <String id="3535dd6c">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="01000000849bc1df" group="80000000">
+      <String id="64b1178c">
+        <Source>jellypaws - Cow Plush</Source>
+        <Dest>jellypaws - Cow Plush</Dest>
+      </String>
+      <String id="0fb98dea">
+        <Source>by jellypawss on tumblr</Source>
+        <Dest>by jellypawss on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="0100000032ed7551" group="80000000">
+      <String id="fdb00766">
+        <Source>jellypaws - Otter Plushie</Source>
+        <Dest>jellypaws - Otter Plushie</Dest>
+      </String>
+      <String id="818d7004">
+        <Source>jellypawss on tumblr</Source>
+        <Dest>jellypawss on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="01000000694dca8d" group="80000000">
+      <String id="4289ee12">
+        <Source>jellypaws - Monkey Plush</Source>
+        <Dest>jellypaws - Monkey Plush</Dest>
+      </String>
+      <String id="d2846ac8">
+        <Source>jellypawss on tumblr</Source>
+        <Dest>jellypawss on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="010000006a477122" group="80000000">
+      <String id="b0f2aea5">
+        <Source>jellypaws - Bee Plushie</Source>
+        <Dest>jellypaws - Bee Plushie</Dest>
+      </String>
+      <String id="df9dd5af">
+        <Source>jellypawss on tumblr</Source>
+        <Dest>jellypawss on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="010000002d5711f3" group="80000000">
+      <String id="70b1d610">
+        <Source>jellypaws - Bat Plushie</Source>
+        <Dest>jellypaws - Bat Plushie</Dest>
+      </String>
+      <String id="a71cc61a">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="010000006d4d43a7" group="80000000">
+      <String id="10a778fc">
+        <Source>jellypaws - Mushroom Buddy</Source>
+        <Dest>jellypaws - Mushroom Buddy</Dest>
+      </String>
+      <String id="7d4d94be">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="010000003d9b55e4" group="80000000">
+      <String id="5328bd7b">
+        <Source>jellypaws - Fox Plushie</Source>
+        <Dest>jellypaws - Fox Plushie</Dest>
+      </String>
+      <String id="d51953a1">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="0100000093bf3201" group="80000000">
+      <String id="129e2146">
+        <Source>jellypaws - Weighted Shark Plush</Source>
+        <Dest>jellypaws - Weighted Shark Plush</Dest>
+      </String>
+      <String id="abdfc774">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="010000003f497712" group="80000000">
+      <String id="4c3e7661">
+        <Source>jellypaws - Raccoon Plushie</Source>
+        <Dest>jellypaws - Raccoon Plushie</Dest>
+      </String>
+      <String id="b8e18413">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="01000000821e2710" group="80000000">
+      <String id="f723f12f">
+        <Source>jellypaws - Elephant Plush</Source>
+        <Dest>jellypaws - Elephant Plush</Dest>
+      </String>
+      <String id="81ce643d">
+        <Source>jellypawss on tumblr</Source>
+        <Dest>jellypawss on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="01000000e2633935" group="80000000">
+      <String id="cc82a91e">
+        <Source>jellypaws - Clown Bear Plushie</Source>
+        <Dest>jellypaws - Clown Bear Plushie</Dest>
+      </String>
+      <String id="7757d62c">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="010000007a858d6a" group="80000000">
+      <String id="3688c5cd">
+        <Source>jellypaws - Weighted Parakeet Plush</Source>
+        <Dest>jellypaws - Weighted Parakeet Plush</Dest>
+      </String>
+      <String id="40abbbc7">
+        <Source>jellypaws on tumblr</Source>
+        <Dest>jellypaws on tumblr</Dest>
+      </String>
+    </Table>
+    <Table instance="01000000d990be4c" group="80000000">
+      <String id="91f57e39">
+        <Source>jellypawss on tumblr</Source>
+        <Dest>jellypawss on tumblr</Dest>
+      </String>
+      <String id="3c041e98">
+        <Source>jellypaws - SDV Rooster</Source>
+        <Dest>jellypaws - SDV Rooster</Dest>
+      </String>
+    </Table>
+    <Table instance="010000005af443d4" group="80000000">
+      <String id="8896c64f">
+        <Source>Momo-cc Little Leaf Blob | MOMO Decor Statue Plush Clutter</Source>
+        <Dest>Momo-cc Little Leaf Blob | MOMO Decor Statue Plush Clutter</Dest>
+      </String>
+      <String id="f280f6cf">
+        <Source>@MOMO-CC
+Patreon.com/MOMOCC
+To find all items you can type ‘MOMO’ in the search bar </Source>
+        <Dest>@MOMO-CC
+Patreon.com/MOMOCC
+To find all items you can type ‘MOMO’ in the search bar </Dest>
+      </String>
+    </Table>
+    <Table instance="010000003eacba9b" group="80000000">
+      <String id="d45527f4">
+        <Source>Momo-cc Little Mushroom Blob | MOMO Decor Statue Plush Clutter</Source>
+        <Dest>Momo-cc Little Mushroom Blob | MOMO Decor Statue Plush Clutter</Dest>
+      </String>
+      <String id="0bee491c">
+        <Source>@MOMO-CC
+Patreon.com/MOMOCC
+To find all items you can type ‘MOMO’ in the search bar </Source>
+        <Dest>@MOMO-CC
+Patreon.com/MOMOCC
+To find all items you can type ‘MOMO’ in the search bar </Dest>
+      </String>
+    </Table>
+    <Table instance="01000000cfe47cb5" group="80000000">
+      <String id="5cb2d1be">
+        <Source>Momo-cc Little Plant Blob | MOMO Decor Statue Plush Clutter</Source>
+        <Dest>Momo-cc Little Plant Blob | MOMO Decor Statue Plush Clutter</Dest>
+      </String>
+      <String id="43167802">
+        <Source>@MOMO-CC
+Patreon.com/MOMOCC
+To find all items you can type ‘MOMO’ in the search bar </Source>
+        <Dest>@MOMO-CC
+Patreon.com/MOMOCC
+To find all items you can type ‘MOMO’ in the search bar </Dest>
+      </String>
+    </Table>
+  </Content>
+</STBLXMLResources>

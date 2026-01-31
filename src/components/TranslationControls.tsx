@@ -199,6 +199,7 @@ export function TranslationControls({
                             variant={mode === "manual" ? "default" : "ghost"}
                             size="sm"
                             onClick={() => setMode("manual")}
+                            disabled={isTranslating}
                             className="h-8"
                         >
                             手动模式
@@ -207,6 +208,7 @@ export function TranslationControls({
                             variant={mode === "auto" ? "default" : "ghost"}
                             size="sm"
                             onClick={() => setMode("auto")}
+                            disabled={isTranslating}
                             className="h-8"
                         >
                             自动模式 (LLM)
@@ -259,6 +261,7 @@ export function TranslationControls({
                                     value={settings.apiBaseUrl}
                                     onChange={(e) => onUpdateSettings({ apiBaseUrl: e.target.value })}
                                     placeholder="https://api.openai.com/v1"
+                                    disabled={isTranslating}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -267,6 +270,7 @@ export function TranslationControls({
                                     value={settings.model}
                                     onChange={(e) => onUpdateSettings({ model: e.target.value })}
                                     placeholder="gpt-3.5-turbo"
+                                    disabled={isTranslating}
                                 />
                             </div>
                         </div>
@@ -278,6 +282,7 @@ export function TranslationControls({
                                 value={settings.apiKey}
                                 onChange={(e) => onUpdateSettings({ apiKey: e.target.value })}
                                 placeholder="sk-..."
+                                disabled={isTranslating}
                             />
                         </div>
 
@@ -292,6 +297,7 @@ export function TranslationControls({
                                 step={1}
                                 value={settings.batchSize}
                                 onChange={(e) => onUpdateSettings({ batchSize: Number(e.target.value) })}
+                                disabled={isTranslating}
                             />
                         </div>
 

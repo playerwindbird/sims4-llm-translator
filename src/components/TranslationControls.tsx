@@ -7,7 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import type { ParsedItem } from "@/lib/xml-utils";
 import type { ProjectSettings } from "@/hooks/use-project-state";
-import { Copy, Check, Play, Pause, X } from "lucide-react";
+import { Copy, Check, Play, Pause, X, RotateCcw } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Assuming Tabs are available or I need to implement them/install them.
 // Wait, I saw components list earlier, I don't recall seeing 'tabs.tsx'.
@@ -178,14 +189,18 @@ export function TranslationControls({
         }
     };
 
-    const handleReset = () => {
+    const handleCancel = () => {
         shouldPauseRef.current = true; // Signal loop to stop
-        abortReasonRef.current = "reset";
+        abortReasonRef.current = "reset"; // generic abort
         abortControllerRef.current?.abort();
         setIsTranslating(false);
         setIsPaused(false);
         setCurrentBatchIndex(0);
         setProgress({ current: 0, total: 0 });
+    };
+
+    const handleReset = () => {
+        handleCancel(); // Reuse stop logic
         onClearTranslations();
     };
 
@@ -328,9 +343,30 @@ export function TranslationControls({
                                 )}
                             </Button>
                             {(isTranslating || isPaused) && (
-                                <Button variant="secondary" className="w-full mt-2" onClick={handleReset}>
-                                    <X className="mr-2 h-4 w-4" /> 取消并重置
-                                </Button>
+                                <div className="space-y-2">
+                                    <Button variant="secondary" className="w-full" onClick={handleCancel}>
+                                        <X className="mr-2 h-4 w-4" /> 取消翻译
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" className="w-full">
+                                                <RotateCcw className="mr-2 h-4 w-4" /> 重置翻译
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>确认重置？</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    将清空所有已翻译文本，是否确认？
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>取消</AlertDialogCancel>
+                                                <AlertDialogAction onClick={handleReset}>确认</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
                             )}
                         </div>
                     </div>

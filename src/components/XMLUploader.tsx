@@ -48,7 +48,7 @@ export function XMLUploader({ onUpload }: XMLUploaderProps) {
                 <div className="text-center space-y-1">
                     <h3 className="text-lg font-semibold">上传 Sims 4 XML</h3>
                     <p className="text-sm text-muted-foreground">
-                        将 extracted .xml 文件拖拽至此，或点击上传。
+                        将 xml 文件拖拽至此，或点击上传。
                     </p>
                 </div>
                 <input

@@ -13,7 +13,67 @@ interface TranslationEditorProps {
     onTranslationChange: (id: string, value: string) => void;
 }
 
-const ITEMS_PER_PAGE = 300;
+const ITEMS_PER_PAGE = 100;
+
+function PaginationControls({
+    currentPage,
+    totalPages,
+    onPageChange
+}: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+}) {
+    if (totalPages <= 1) return null;
+
+    return (
+        <div className="flex items-center justify-center gap-2 py-4">
+            <Button
+                variant="outline"
+                size="icon"
+                onClick={() => onPageChange(1)}
+                disabled={currentPage === 1}
+                title="第一页"
+            >
+                <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button
+                variant="outline"
+                size="icon"
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                title="上一页"
+            >
+                <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            <div className="flex items-center gap-2 mx-2">
+                <span className="text-sm font-medium">
+                    第 {currentPage} 页，共 {totalPages} 页
+                </span>
+            </div>
+
+            <Button
+                variant="outline"
+                size="icon"
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                title="下一页"
+            >
+                <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+                variant="outline"
+                size="icon"
+                onClick={() => onPageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                title="最后一页"
+            >
+                <ChevronsRight className="h-4 w-4" />
+            </Button>
+        </div>
+    );
+}
 
 export function TranslationEditor({
     items,
@@ -73,6 +133,12 @@ export function TranslationEditor({
                 </div>
             </div>
 
+            <PaginationControls
+                currentPage={safeCurrentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
+
             <div className="grid gap-4">
                 {currentItems.map((item) => {
                     const currentTranslation = translations[item.id] || "";
@@ -112,54 +178,13 @@ export function TranslationEditor({
                 })}
             </div>
 
-            {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 py-6">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handlePageChange(1)}
-                        disabled={safeCurrentPage === 1}
-                        title="第一页"
-                    >
-                        <ChevronsLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handlePageChange(safeCurrentPage - 1)}
-                        disabled={safeCurrentPage === 1}
-                        title="上一页"
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-
-                    <div className="flex items-center gap-2 mx-2">
-                        <span className="text-sm font-medium">
-                            第 {safeCurrentPage} 页，共 {totalPages} 页
-                        </span>
-                    </div>
-
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handlePageChange(safeCurrentPage + 1)}
-                        disabled={safeCurrentPage === totalPages}
-                        title="下一页"
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handlePageChange(totalPages)}
-                        disabled={safeCurrentPage === totalPages}
-                        title="最后一页"
-                    >
-                        <ChevronsRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            )}
+            <PaginationControls
+                currentPage={safeCurrentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
         </div>
     );
 }
+
 

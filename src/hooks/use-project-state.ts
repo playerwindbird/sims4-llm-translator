@@ -11,6 +11,7 @@ export interface ProjectState {
     updateTranslation: (id: string, value: string) => void;
     updateSettings: (settings: Partial<ProjectSettings>) => void;
     clearProject: () => void;
+    clearTranslations: () => void;
 }
 
 export interface ProjectSettings {
@@ -102,6 +103,14 @@ export function useProjectState(): ProjectState {
         // We typically want to keep settings (API keys etc) even if clearing the project file
     };
 
+    const clearTranslations = () => {
+        const initialTranslations: Record<string, string> = {};
+        parsedItems.forEach((item) => {
+            initialTranslations[item.id] = "";
+        });
+        setTranslations(initialTranslations);
+    };
+
     return {
         xmlContent,
         parsedItems,
@@ -112,5 +121,6 @@ export function useProjectState(): ProjectState {
         updateTranslation,
         updateSettings,
         clearProject,
+        clearTranslations,
     };
 }

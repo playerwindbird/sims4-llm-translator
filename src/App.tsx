@@ -17,6 +17,7 @@ export function App() {
         updateTranslation,
         updateSettings,
         clearProject,
+        clearTranslations,
     } = useProjectState();
 
     const handleApplyTranslations = (jsonString: string) => {
@@ -117,6 +118,7 @@ export function App() {
                                     settings={settings}
                                     onUpdateSettings={updateSettings}
                                     onApplyTranslations={handleApplyTranslations}
+                                    onClearTranslations={clearTranslations}
                                 />
                             </div>
                         </div>

@@ -18,6 +18,7 @@ interface TranslationControlsProps {
     settings: ProjectSettings;
     onUpdateSettings: (settings: Partial<ProjectSettings>) => void;
     onApplyTranslations: (jsonString: string) => void;
+    onClearTranslations: () => void;
 }
 
 export function TranslationControls({
@@ -25,6 +26,7 @@ export function TranslationControls({
     settings,
     onUpdateSettings,
     onApplyTranslations,
+    onClearTranslations,
 }: TranslationControlsProps) {
     const [mode, setMode] = useState<"manual" | "auto">("manual");
     const [jsonInput, setJsonInput] = useState("");
@@ -184,6 +186,7 @@ export function TranslationControls({
         setIsPaused(false);
         setCurrentBatchIndex(0);
         setProgress({ current: 0, total: 0 });
+        onClearTranslations();
     };
 
     return (

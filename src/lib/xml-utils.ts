@@ -53,6 +53,19 @@ export async function parseXML(fileContent: string): Promise<ParsedData> {
 }
 
 /**
+ * Escapes special XML characters in a string.
+ * Converts: & -> &amp;, < -> &lt;, > -> &gt;, " -> &quot;, ' -> &apos;
+ */
+function escapeXML(str: string): string {
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+}
+
+/**
  * Generates the translated XML by replacing Dest tags in the original content.
  * Preserves the original formatting.
  */
@@ -80,8 +93,9 @@ export function generateXML(
 
         // Replace the content inside <Dest>...</Dest> with the new translation
         // If translation is empty, use &#32; (space entity) as requested
+        // Escape XML special characters in the translation
         resultXML = resultXML.replace(regex, (_, prefix, _oldContent, suffix) => {
-            const finalTranslation = translation === "" ? "&#32;" : translation;
+            const finalTranslation = translation === "" ? "&#32;" : escapeXML(translation);
             return `${prefix}${finalTranslation}${suffix}`;
         });
     }

@@ -211,6 +211,16 @@ export function TranslationControls({
                             </div>
                         </div>
 
+                        <div className="space-y-2">
+                            <Label>API 密钥</Label>
+                            <Input
+                                type="password"
+                                value={settings.apiKey}
+                                onChange={(e) => onUpdateSettings({ apiKey: e.target.value })}
+                                placeholder="sk-..."
+                            />
+                        </div>
+
                         <div className="space-y-3 pt-2">
                             <div className="flex items-center justify-between">
                                 <Label>一次性处理条目数</Label>
@@ -239,15 +249,6 @@ export function TranslationControls({
                                 </div>
                             </div>
                         )}
-                        <div className="space-y-2">
-                            <Label>API 密钥</Label>
-                            <Input
-                                type="password"
-                                value={settings.apiKey}
-                                onChange={(e) => onUpdateSettings({ apiKey: e.target.value })}
-                                placeholder="sk-..."
-                            />
-                        </div>
                         <Button className="w-full" onClick={handleAutoTranslate} disabled={!settings.apiKey || isTranslating}>
                             {isTranslating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 翻译中...</> : <><Play className="mr-2 h-4 w-4" /> 开始自动翻译</>}
                         </Button>

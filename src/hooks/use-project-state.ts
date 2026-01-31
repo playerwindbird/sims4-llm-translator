@@ -20,7 +20,16 @@ export interface ProjectSettings {
     model: string;
     batchSize: number;
     manualBatchSize: number;
+    customPrompt: string;
 }
+
+export const DEFAULT_PROMPT = `你是一个专业的游戏翻译器。请将以下 JSON 中的值翻译成简体中文。
+
+要求：
+1. 保持 JSON 键名不变
+2. 只翻译值的内容
+3. 保持游戏术语的一致性
+4. 返回有效的 JSON 格式`;
 
 const STORAGE_KEY = "sims4-translator-project";
 
@@ -35,6 +44,7 @@ export function useProjectState(): ProjectState {
         model: "gpt-3.5-turbo",
         batchSize: 50,
         manualBatchSize: 50,
+        customPrompt: DEFAULT_PROMPT,
     });
 
     // Hydrate from localStorage

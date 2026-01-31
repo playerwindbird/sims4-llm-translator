@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import type { ParsedItem } from "@/lib/xml-utils";
 import type { ProjectSettings } from "@/hooks/use-project-state";
+import { DEFAULT_PROMPT } from "@/hooks/use-project-state";
 import { Copy, Check, Play, Pause, X, RotateCcw } from "lucide-react";
 import {
     AlertDialog,
@@ -174,7 +175,8 @@ export function TranslationControls({
 
                 const sourceJson = JSON.stringify(batchObj, null, 2);
 
-                const prompt = `Translate the following JSON values to the target language (Chinese). Keep the keys unchanged. Return ONLY the JSON.\n\n${sourceJson}`;
+                const systemPrompt = settings.customPrompt || DEFAULT_PROMPT;
+                const userPrompt = `${sourceJson}`;
 
                 const response = await fetch(`${settings.apiBaseUrl}/chat/completions`, {
                     method: "POST",
@@ -186,8 +188,8 @@ export function TranslationControls({
                     body: JSON.stringify({
                         model: settings.model,
                         messages: [
-                            { role: "system", content: "You are a translator. Translate the values to Chinese. Return strictly valid JSON." },
-                            { role: "user", content: prompt }
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: userPrompt }
                         ]
                     })
                 });
@@ -407,6 +409,28 @@ export function TranslationControls({
                                 value={settings.apiKey}
                                 onChange={(e) => onUpdateSettings({ apiKey: e.target.value })}
                                 placeholder="sk-..."
+                                disabled={isTranslating}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label>自定义提示词</Label>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                                    onClick={() => onUpdateSettings({ customPrompt: DEFAULT_PROMPT })}
+                                    disabled={isTranslating || settings.customPrompt === DEFAULT_PROMPT}
+                                >
+                                    恢复默认
+                                </Button>
+                            </div>
+                            <Textarea
+                                value={settings.customPrompt || DEFAULT_PROMPT}
+                                onChange={(e) => onUpdateSettings({ customPrompt: e.target.value })}
+                                placeholder="输入自定义提示词..."
+                                className="h-28 font-mono text-xs"
                                 disabled={isTranslating}
                             />
                         </div>

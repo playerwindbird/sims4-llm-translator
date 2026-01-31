@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import type { ParsedItem } from "@/lib/xml-utils";
 import type { ProjectSettings } from "@/hooks/use-project-state";
-import { Copy, Check, Play, Loader2 } from "lucide-react";
+import { Copy, Check, Play, Pause, X } from "lucide-react";
 
 // Assuming Tabs are available or I need to implement them/install them.
 // Wait, I saw components list earlier, I don't recall seeing 'tabs.tsx'.
@@ -30,6 +30,9 @@ export function TranslationControls({
     const [jsonInput, setJsonInput] = useState("");
     const [isCopied, setIsCopied] = useState(false);
     const [isTranslating, setIsTranslating] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
+    const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
+    const shouldPauseRef = useRef(false);
 
     const generateSourceJson = () => {
         const obj: Record<string, string> = {};
@@ -57,27 +60,32 @@ export function TranslationControls({
 
     const [progress, setProgress] = useState({ current: 0, total: 0 });
 
-    const handleAutoTranslate = async () => {
+    const runTranslationLoop = async (startIndex: number) => {
         setIsTranslating(true);
-        setProgress({ current: 0, total: 0 });
+        setIsPaused(false); // Ensure not paused when running
+        shouldPauseRef.current = false; // Ensure pause flag is reset
 
         try {
             const batchSize = settings.batchSize || 50;
             const totalItems = items.length;
             const totalBatches = Math.ceil(totalItems / batchSize);
 
-            setProgress({ current: 0, total: totalBatches });
+            if (startIndex === 0) {
+                setProgress({ current: 0, total: totalBatches });
+            } else {
+                setProgress({ current: startIndex, total: totalBatches });
+            }
 
-            for (let i = 0; i < totalBatches; i++) {
+            for (let i = startIndex; i < totalBatches; i++) {
+                if (shouldPauseRef.current) {
+                    setCurrentBatchIndex(i);
+                    setIsPaused(true); // Set paused state when loop exits due to pause
+                    return;
+                }
+
                 const start = i * batchSize;
                 const end = Math.min(start + batchSize, totalItems);
                 const batchItems = items.slice(start, end);
-
-                // Skip if all items in this batch are already translated? 
-                // User didn't ask for this, but it saves tokens. 
-                // For now, adhere to "translate everything" or simple logic to avoid complexity unless requested.
-                // However, the prompt is just "translate".
-                // I will just translate the batch.
 
                 const batchObj: Record<string, string> = {};
                 batchItems.forEach((item) => {
@@ -119,14 +127,47 @@ export function TranslationControls({
 
                 // Update progress after successful batch
                 setProgress({ current: i + 1, total: totalBatches });
+                setCurrentBatchIndex(i + 1);
             }
+
+            // Completed
+            setIsTranslating(false);
+            setIsPaused(false);
+            setCurrentBatchIndex(0);
 
         } catch (e: any) {
             alert("翻译失败: " + e.message);
-        } finally {
             setIsTranslating(false);
-            setProgress({ current: 0, total: 0 });
+            setIsPaused(false);
+            setCurrentBatchIndex(0); // Reset index on error
         }
+    };
+
+    const handleStartPauseContinue = () => {
+        if (!isTranslating) {
+            // Start fresh
+            setIsPaused(false);
+            shouldPauseRef.current = false;
+            setCurrentBatchIndex(0);
+            runTranslationLoop(0);
+        } else if (isPaused) {
+            // Continue
+            setIsPaused(false);
+            shouldPauseRef.current = false;
+            runTranslationLoop(currentBatchIndex);
+        } else {
+            // Pause
+            shouldPauseRef.current = true;
+            // The loop will detect shouldPauseRef.current and set isPaused to true
+        }
+    };
+
+    const handleReset = () => {
+        shouldPauseRef.current = true; // Signal loop to stop
+        setIsTranslating(false);
+        setIsPaused(false);
+        setCurrentBatchIndex(0);
+        setProgress({ current: 0, total: 0 });
     };
 
     return (
@@ -249,9 +290,24 @@ export function TranslationControls({
                                 </div>
                             </div>
                         )}
-                        <Button className="w-full" onClick={handleAutoTranslate} disabled={!settings.apiKey || isTranslating}>
-                            {isTranslating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 翻译中...</> : <><Play className="mr-2 h-4 w-4" /> 开始自动翻译</>}
-                        </Button>
+                        <div className="space-y-2">
+                            <Button className="w-full" onClick={handleStartPauseContinue} disabled={!settings.apiKey}>
+                                {isTranslating ? (
+                                    isPaused ? (
+                                        <><Play className="mr-2 h-4 w-4" /> 继续翻译</>
+                                    ) : (
+                                        <><Pause className="mr-2 h-4 w-4" /> 暂停翻译</>
+                                    )
+                                ) : (
+                                    <><Play className="mr-2 h-4 w-4" /> 开始自动翻译</>
+                                )}
+                            </Button>
+                            {(isTranslating || isPaused) && (
+                                <Button variant="secondary" className="w-full mt-2" onClick={handleReset}>
+                                    <X className="mr-2 h-4 w-4" /> 取消并重置
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 )}
             </CardContent>

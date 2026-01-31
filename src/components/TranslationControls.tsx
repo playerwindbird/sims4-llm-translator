@@ -469,6 +469,38 @@ export function TranslationControls({
                                 </div>
                             </div>
                         )}
+
+                        {/* Entry count status bar */}
+                        <div className="flex items-center justify-center gap-4 py-3 px-4 bg-muted/50 rounded-lg text-sm">
+                            <span className="text-muted-foreground">
+                                已处理条目：<span className="font-mono font-medium text-foreground">{processedCount}</span>
+                                {entryDelta && entryDelta.added > 0 && (
+                                    <span key={`auto-processed-add-${animationKey}`} className="entry-delta-animation ml-2 text-blue-500 font-medium">
+                                        +{entryDelta.added}
+                                    </span>
+                                )}
+                                {entryDelta && entryDelta.added < 0 && (
+                                    <span key={`auto-processed-sub-${animationKey}`} className="entry-delta-animation ml-2 text-red-500 font-medium">
+                                        {entryDelta.added}
+                                    </span>
+                                )}
+                            </span>
+                            <span className="text-muted-foreground">/</span>
+                            <span className="text-muted-foreground">
+                                待处理条目：<span className="font-mono font-medium text-foreground">{pendingCount}</span>
+                                {entryDelta && entryDelta.removed < 0 && (
+                                    <span key={`auto-pending-sub-${animationKey}`} className="entry-delta-animation ml-2 text-green-500 font-medium">
+                                        {entryDelta.removed}
+                                    </span>
+                                )}
+                                {entryDelta && entryDelta.removed > 0 && (
+                                    <span key={`auto-pending-add-${animationKey}`} className="entry-delta-animation ml-2 text-red-500 font-medium">
+                                        +{entryDelta.removed}
+                                    </span>
+                                )}
+                            </span>
+                        </div>
+
                         <div className="space-y-2">
                             <Button className="w-full" onClick={handleStartPauseContinue} disabled={!settings.apiKey}>
                                 {isTranslating ? (

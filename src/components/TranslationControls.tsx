@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import type { ParsedItem } from "@/lib/xml-utils";
 import type { ProjectSettings } from "@/hooks/use-project-state";
-import { Copy, Check, Play, Pause, X, RotateCcw } from "lucide-react";
+import { Copy, Check, Play, Pause, X, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -42,6 +42,13 @@ export function TranslationControls({
     onClearTranslations,
 }: TranslationControlsProps) {
     const [mode, setMode] = useState<"manual" | "auto">("manual");
+    const [manualBatchIndex, setManualBatchIndex] = useState(0);
+
+    // Reset manual batch index when items change
+    useEffect(() => {
+        setManualBatchIndex(0);
+    }, [items]); // eslint-disable-line
+
     const [jsonInput, setJsonInput] = useState("");
     const [isCopied, setIsCopied] = useState(false);
     const [isTranslating, setIsTranslating] = useState(false);
@@ -53,8 +60,13 @@ export function TranslationControls({
     const abortReasonRef = useRef<"pause" | "reset" | null>(null);
 
     const generateSourceJson = () => {
+        const batchSize = settings.manualBatchSize || 50;
+        const start = manualBatchIndex * batchSize;
+        const end = Math.min(start + batchSize, items.length);
+        const batchItems = items.slice(start, end);
+
         const obj: Record<string, string> = {};
-        items.forEach((item) => {
+        batchItems.forEach((item) => {
             obj[item.id] = item.source;
         });
         return JSON.stringify(obj, null, 2);
@@ -241,8 +253,53 @@ export function TranslationControls({
             <CardContent className="space-y-4">
                 {mode === "manual" ? (
                     <div className="space-y-4">
+                        <div className="space-y-3 pt-2">
+                            <div className="flex items-center justify-between">
+                                <Label>一次性处理条目数</Label>
+                                <span className="text-sm font-mono text-muted-foreground">{settings.manualBatchSize || 50}</span>
+                            </div>
+                            <Slider
+                                min={1}
+                                max={100}
+                                step={1}
+                                value={settings.manualBatchSize || 50}
+                                onChange={(e) => {
+                                    onUpdateSettings({ manualBatchSize: Number(e.target.value) });
+                                    setManualBatchIndex(0);
+                                }}
+                            />
+                        </div>
+
                         <div className="space-y-2">
-                            <Label>1. 复制源 JSON</Label>
+                            <div className="flex items-center justify-between">
+                                <Label>1. 复制源 JSON</Label>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span>批次 {manualBatchIndex + 1} / {Math.max(1, Math.ceil(items.length / (settings.manualBatchSize || 50)))}</span>
+                                    <div className="flex gap-1">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-6 w-6"
+                                            onClick={() => setManualBatchIndex(Math.max(0, manualBatchIndex - 1))}
+                                            disabled={manualBatchIndex === 0}
+                                        >
+                                            <ChevronLeft className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-6 w-6"
+                                            onClick={() => {
+                                                const total = Math.ceil(items.length / (settings.manualBatchSize || 50));
+                                                setManualBatchIndex(Math.min(total - 1, manualBatchIndex + 1));
+                                            }}
+                                            disabled={manualBatchIndex >= Math.ceil(items.length / (settings.manualBatchSize || 50)) - 1}
+                                        >
+                                            <ChevronRight className="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
                             <div className="flex gap-2">
                                 <Textarea
                                     readOnly

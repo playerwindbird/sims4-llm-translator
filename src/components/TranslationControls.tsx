@@ -32,7 +32,10 @@ export function TranslationControls({
     const [isTranslating, setIsTranslating] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
+    const dummyRef = useRef(false); // Placeholder for line count matching if needed, or just insert.
     const shouldPauseRef = useRef(false);
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const abortReasonRef = useRef<"pause" | "reset" | null>(null);
 
     const generateSourceJson = () => {
         const obj: Record<string, string> = {};
@@ -62,8 +65,11 @@ export function TranslationControls({
 
     const runTranslationLoop = async (startIndex: number) => {
         setIsTranslating(true);
+        setIsTranslating(true);
         setIsPaused(false); // Ensure not paused when running
         shouldPauseRef.current = false; // Ensure pause flag is reset
+        abortControllerRef.current = new AbortController();
+        abortReasonRef.current = null;
 
         try {
             const batchSize = settings.batchSize || 50;
@@ -98,6 +104,7 @@ export function TranslationControls({
 
                 const response = await fetch(`${settings.apiBaseUrl}/chat/completions`, {
                     method: "POST",
+                    signal: abortControllerRef.current?.signal,
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${settings.apiKey}`
@@ -136,6 +143,12 @@ export function TranslationControls({
             setCurrentBatchIndex(0);
 
         } catch (e: any) {
+            if (e.name === 'AbortError') {
+                if (abortReasonRef.current === 'pause') {
+                    setIsPaused(true);
+                }
+                return;
+            }
             alert("翻译失败: " + e.message);
             setIsTranslating(false);
             setIsPaused(false);
@@ -158,12 +171,15 @@ export function TranslationControls({
         } else {
             // Pause
             shouldPauseRef.current = true;
-            // The loop will detect shouldPauseRef.current and set isPaused to true
+            abortReasonRef.current = "pause";
+            abortControllerRef.current?.abort();
         }
     };
 
     const handleReset = () => {
         shouldPauseRef.current = true; // Signal loop to stop
+        abortReasonRef.current = "reset";
+        abortControllerRef.current?.abort();
         setIsTranslating(false);
         setIsPaused(false);
         setCurrentBatchIndex(0);

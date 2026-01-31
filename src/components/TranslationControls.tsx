@@ -458,7 +458,20 @@ export function TranslationControls({
                         {isTranslating && (
                             <div className="space-y-2">
                                 <div className="flex justify-between text-xs text-muted-foreground">
-                                    <span>进度</span>
+                                    <span>
+                                        {isPaused ? (
+                                            "已暂停"
+                                        ) : (
+                                            <>
+                                                翻译中
+                                                <span className="animated-ellipsis">
+                                                    <span>.</span>
+                                                    <span>.</span>
+                                                    <span>.</span>
+                                                </span>
+                                            </>
+                                        )}
+                                    </span>
                                     <span>{progress.current} / {progress.total} 批次</span>
                                 </div>
                                 <div className="h-2 bg-secondary rounded-full overflow-hidden">

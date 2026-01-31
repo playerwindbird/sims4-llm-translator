@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 
 interface TranslationEditorProps {
@@ -121,15 +121,8 @@ export function TranslationEditor({
         <div className="space-y-4">
             <div className="flex items-center justify-between pb-4">
                 <h2 className="text-2xl font-bold">翻译编辑器</h2>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div>
-                        共 {items.length} 条目
-                    </div>
-                    {totalPages > 1 && (
-                        <div className="flex items-center gap-2">
-                            第 {safeCurrentPage} / {totalPages} 页
-                        </div>
-                    )}
+                <div className="text-sm text-muted-foreground">
+                    共 {items.length} 条目
                 </div>
             </div>
 
@@ -154,15 +147,7 @@ export function TranslationEditor({
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <Label className="text-xs text-muted-foreground">目标文本 (中文)</Label>
-                                        {isMissing && (
-                                            <div className="flex items-center text-destructive text-xs">
-                                                <AlertCircle className="w-3 h-3 mr-1" />
-                                                必填
-                                            </div>
-                                        )}
-                                    </div>
+                                    <Label className="text-xs text-muted-foreground">目标文本 (中文)</Label>
 
                                     <Textarea
                                         value={currentTranslation}

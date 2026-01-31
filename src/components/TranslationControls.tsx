@@ -113,7 +113,7 @@ export function TranslationControls({
                     <CardTitle>Translation Tools</CardTitle>
                     <div className="flex bg-muted rounded-lg p-1">
                         <Button
-                            variant={mode === "manual" ? "secondary" : "ghost"}
+                            variant={mode === "manual" ? "default" : "ghost"}
                             size="sm"
                             onClick={() => setMode("manual")}
                             className="h-8"
@@ -121,7 +121,7 @@ export function TranslationControls({
                             Manual Mode
                         </Button>
                         <Button
-                            variant={mode === "auto" ? "secondary" : "ghost"}
+                            variant={mode === "auto" ? "default" : "ghost"}
                             size="sm"
                             onClick={() => setMode("auto")}
                             className="h-8"

@@ -26,6 +26,7 @@ import {
 
 interface TranslationControlsProps {
     items: ParsedItem[];
+    translations: Record<string, string>; // Added prop
     settings: ProjectSettings;
     onUpdateSettings: (settings: Partial<ProjectSettings>) => void;
     onApplyTranslations: (jsonString: string) => void;
@@ -34,6 +35,7 @@ interface TranslationControlsProps {
 
 export function TranslationControls({
     items,
+    translations, // Added
     settings,
     onUpdateSettings,
     onApplyTranslations,
@@ -343,30 +345,30 @@ export function TranslationControls({
                                 )}
                             </Button>
                             {(isTranslating || isPaused) && (
-                                <div className="space-y-2">
-                                    <Button variant="secondary" className="w-full" onClick={handleCancel}>
-                                        <X className="mr-2 h-4 w-4" /> 取消翻译
-                                    </Button>
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" className="w-full">
-                                                <RotateCcw className="mr-2 h-4 w-4" /> 重置翻译
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>确认重置？</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    将清空所有已翻译文本，是否确认？
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>取消</AlertDialogCancel>
-                                                <AlertDialogAction onClick={handleReset}>确认</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </div>
+                                <Button variant="secondary" className="w-full" onClick={handleCancel}>
+                                    <X className="mr-2 h-4 w-4" /> 取消翻译
+                                </Button>
+                            )}
+                            {Object.values(translations).some(t => t.trim() !== '') && (
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" className="w-full">
+                                            <RotateCcw className="mr-2 h-4 w-4" /> 重置翻译
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>确认重置？</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                将清空所有已翻译文本，是否确认？
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>取消</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleReset}>确认</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             )}
                         </div>
                     </div>

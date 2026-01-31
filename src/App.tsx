@@ -115,6 +115,7 @@ export function App() {
                             <div className="sticky top-24 space-y-6">
                                 <TranslationControls
                                     items={parsedItems}
+                                    translations={translations}
                                     settings={settings}
                                     onUpdateSettings={updateSettings}
                                     onApplyTranslations={handleApplyTranslations}

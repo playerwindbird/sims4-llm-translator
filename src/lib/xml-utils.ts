@@ -28,7 +28,7 @@ export async function parseXML(fileContent: string): Promise<ParsedData> {
 
     const errorNode = xmlDoc.querySelector("parsererror");
     if (errorNode) {
-        throw new Error("Failed to parse XML: " + errorNode.textContent);
+        throw new Error("解析 XML 失败: " + errorNode.textContent);
     }
 
     const items: ParsedItem[] = [];

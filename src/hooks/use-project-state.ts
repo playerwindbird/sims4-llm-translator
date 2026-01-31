@@ -73,7 +73,7 @@ export function useProjectState(): ProjectState {
             // Or maybe we should keep existing dests as "current translation"
             const initialTranslations: Record<string, string> = {};
             items.forEach((item) => {
-                initialTranslations[item.id] = item.dest;
+                initialTranslations[item.id] = "";
             });
             setTranslations(initialTranslations);
         } catch (e) {

@@ -29,7 +29,7 @@ export function App() {
                 }
             });
         } catch (e) {
-            alert("Failed to parse JSON for translations.");
+            alert("解析翻译 JSON 失败。");
         }
     };
 
@@ -48,14 +48,14 @@ export function App() {
             URL.revokeObjectURL(url);
         } catch (e) {
             console.error("Export failed", e);
-            alert("Export failed.");
+            alert("导出失败。");
         }
     };
 
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
-                <div className="text-muted-foreground animate-pulse">Loading project...</div>
+                <div className="text-muted-foreground animate-pulse">加载中...</div>
             </div>
         );
     }
@@ -68,7 +68,7 @@ export function App() {
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold">
                             S4
                         </div>
-                        <h1 className="text-xl font-bold tracking-tight">Sims 4 Translator</h1>
+                        <h1 className="text-xl font-bold tracking-tight">Sims 4 翻译助手</h1>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -76,15 +76,15 @@ export function App() {
                             <>
                                 <Button variant="outline" size="sm" onClick={handleExport}>
                                     <Download className="w-4 h-4 mr-2" />
-                                    Export XML
+                                    导出 XML
                                 </Button>
                                 <Button variant="destructive" size="sm" onClick={() => {
-                                    if (confirm("Are you sure? This will clear all current progress.")) {
+                                    if (confirm("确定要清空吗？这将丢失当前所有进度。")) {
                                         clearProject();
                                     }
                                 }}>
                                     <Trash2 className="w-4 h-4 mr-2" />
-                                    Clear
+                                    清空
                                 </Button>
                             </>
                         )}
@@ -100,10 +100,10 @@ export function App() {
                     <div className="flex flex-col items-center justify-center py-20 animate-in fade-in slide-in-from-bottom-5 duration-500">
                         <div className="text-center mb-8 space-y-2 max-w-lg">
                             <h1 className="text-4xl font-extrabold lg:text-5xl tracking-tight">
-                                Translate your Sims 4 Mods with AI
+                                用 AI 翻译您的 Sims 4 Mod
                             </h1>
                             <p className="text-xl text-muted-foreground">
-                                Upload your extracted XML files, verify strings, and use LLMs to translate them instantly.
+                                上传 XML 文件，校验文本，并使用 AI 极速完成翻译。
                             </p>
                         </div>
                         <XMLUploader onUpload={setXmlContent} />

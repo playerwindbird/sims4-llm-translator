@@ -50,7 +50,7 @@ export function TranslationControls({
             onApplyTranslations(jsonInput);
             setJsonInput("");
         } catch (e) {
-            alert("Invalid JSON format");
+            alert("无效的 JSON 格式");
         }
     };
 
@@ -100,7 +100,7 @@ export function TranslationControls({
 
             onApplyTranslations(jsonStr);
         } catch (e: any) {
-            alert("Translation failed: " + e.message);
+            alert("翻译失败: " + e.message);
         } finally {
             setIsTranslating(false);
         }
@@ -110,7 +110,7 @@ export function TranslationControls({
         <Card className="w-full">
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle>Translation Tools</CardTitle>
+                    <CardTitle>翻译工具</CardTitle>
                     <div className="flex bg-muted rounded-lg p-1">
                         <Button
                             variant={mode === "manual" ? "default" : "ghost"}
@@ -118,7 +118,7 @@ export function TranslationControls({
                             onClick={() => setMode("manual")}
                             className="h-8"
                         >
-                            Manual Mode
+                            手动模式
                         </Button>
                         <Button
                             variant={mode === "auto" ? "default" : "ghost"}
@@ -126,21 +126,21 @@ export function TranslationControls({
                             onClick={() => setMode("auto")}
                             className="h-8"
                         >
-                            Auto Mode (LLM)
+                            自动模式 (LLM)
                         </Button>
                     </div>
                 </div>
                 <CardDescription>
                     {mode === "manual"
-                        ? "Copy the JSON, translate it externally, and paste the result back."
-                        : "Automatically translate using a compatible LLM API."}
+                        ? "复制 JSON，外部翻译后，将结果粘贴回来。"
+                        : "使用兼容的 LLM API 自动翻译。"}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {mode === "manual" ? (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label>1. Copy Source JSON</Label>
+                            <Label>1. 复制源 JSON</Label>
                             <div className="flex gap-2">
                                 <Textarea
                                     readOnly
@@ -153,7 +153,7 @@ export function TranslationControls({
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label>2. Paste Translated JSON</Label>
+                            <Label>2. 粘贴翻译后的 JSON</Label>
                             <div className="flex gap-2">
                                 <Textarea
                                     value={jsonInput}
@@ -162,7 +162,7 @@ export function TranslationControls({
                                     className="h-24 font-mono text-xs"
                                 />
                                 <Button className="h-24 w-12 shrink-0" onClick={handleApplyManual}>
-                                    Apply
+                                    应用
                                 </Button>
                             </div>
                         </div>
@@ -171,7 +171,7 @@ export function TranslationControls({
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>API Base URL</Label>
+                                <Label>API 基础 URL</Label>
                                 <Input
                                     value={settings.apiBaseUrl}
                                     onChange={(e) => onUpdateSettings({ apiBaseUrl: e.target.value })}
@@ -179,7 +179,7 @@ export function TranslationControls({
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Model Name</Label>
+                                <Label>模型名称</Label>
                                 <Input
                                     value={settings.model}
                                     onChange={(e) => onUpdateSettings({ model: e.target.value })}
@@ -188,7 +188,7 @@ export function TranslationControls({
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label>API Key</Label>
+                            <Label>API 密钥</Label>
                             <Input
                                 type="password"
                                 value={settings.apiKey}
@@ -197,7 +197,7 @@ export function TranslationControls({
                             />
                         </div>
                         <Button className="w-full" onClick={handleAutoTranslate} disabled={!settings.apiKey || isTranslating}>
-                            {isTranslating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Translating...</> : <><Play className="mr-2 h-4 w-4" /> Start Auto Translation</>}
+                            {isTranslating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 翻译中...</> : <><Play className="mr-2 h-4 w-4" /> 开始自动翻译</>}
                         </Button>
                     </div>
                 )}

@@ -46,9 +46,9 @@ export function XMLUploader({ onUpload }: XMLUploaderProps) {
                     <Upload className="w-8 h-8 text-primary" />
                 </div>
                 <div className="text-center space-y-1">
-                    <h3 className="text-lg font-semibold">Upload Sims 4 XML</h3>
+                    <h3 className="text-lg font-semibold">上传 Sims 4 XML</h3>
                     <p className="text-sm text-muted-foreground">
-                        Drag and drop your extracted .xml file here, or click to browse.
+                        将 extracted .xml 文件拖拽至此，或点击上传。
                     </p>
                 </div>
                 <input
@@ -58,7 +58,7 @@ export function XMLUploader({ onUpload }: XMLUploaderProps) {
                     accept=".xml"
                     className="hidden"
                 />
-                <Button variant="outline">Select File</Button>
+                <Button variant="outline">选择文件</Button>
             </CardContent>
         </Card>
     );

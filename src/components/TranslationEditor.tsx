@@ -20,7 +20,7 @@ export function TranslationEditor({
     if (items.length === 0) {
         return (
             <div className="text-center text-muted-foreground py-10">
-                No items to translate.
+                没有可翻译的项目。
             </div>
         )
     }
@@ -28,9 +28,9 @@ export function TranslationEditor({
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between pb-4">
-                <h2 className="text-2xl font-bold">Translation Editor</h2>
+                <h2 className="text-2xl font-bold">翻译编辑器</h2>
                 <div className="text-sm text-muted-foreground">
-                    {items.length} Strings
+                    {items.length} 条目
                 </div>
             </div>
             <div className="grid gap-4">
@@ -49,11 +49,11 @@ export function TranslationEditor({
                                 </div>
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <Label className="text-xs text-muted-foreground">Target (Dest)</Label>
+                                        <Label className="text-xs text-muted-foreground">目标文本 (中文)</Label>
                                         {isMissing && (
                                             <div className="flex items-center text-destructive text-xs">
                                                 <AlertCircle className="w-3 h-3 mr-1" />
-                                                Required
+                                                必填
                                             </div>
                                         )}
                                     </div>
@@ -62,7 +62,7 @@ export function TranslationEditor({
                                         value={currentTranslation}
                                         onChange={(e) => onTranslationChange(item.id, e.target.value)}
                                         className="min-h-[80px] font-medium resize-y"
-                                        placeholder="Enter translation here..."
+                                        placeholder="在此输入翻译..."
                                         dir="auto"
                                     />
                                 </div>

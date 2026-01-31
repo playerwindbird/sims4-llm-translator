@@ -112,7 +112,7 @@ export function App() {
                                 </AlertDialog>
                             </>
                         )}
-                        <a href="https://github.com" target="_blank" rel="noreferrer" className="ml-2 text-muted-foreground hover:text-foreground">
+                        <a href="https://github.com/playerwindbird/sims4-llm-translator" target="_blank" rel="noreferrer" className="ml-2 text-muted-foreground hover:text-foreground">
                             <Github className="w-5 h-5" />
                         </a>
                     </div>

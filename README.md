@@ -1,5 +1,7 @@
 # 🎮 Sims 4 LLM Translator
 
+> 🌐 **在线使用**：无需安装，直接访问 [https://playerwindbird.github.io/sims4-llm-translator/](https://playerwindbird.github.io/sims4-llm-translator/) 即可使用！
+
 一款基于 LLM（大语言模型）的模拟人生 4 本地化 XML 文件翻译工具。
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
@@ -29,7 +31,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/sims4-llm-translator.git
+git clone https://github.com/playerwindbird/sims4-llm-translator.git
 cd sims4-llm-translator
 
 # 安装依赖

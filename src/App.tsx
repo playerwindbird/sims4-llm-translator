@@ -4,7 +4,18 @@ import { XMLUploader } from "@/components/XMLUploader";
 import { TranslationEditor } from "@/components/TranslationEditor";
 import { TranslationControls } from "@/components/TranslationControls";
 import { Button } from "@/components/ui/button";
-import { Download, Trash2, Github } from "lucide-react";
+import { Download, FilePlus, Github } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function App() {
     const {
@@ -79,14 +90,26 @@ export function App() {
                                     <Download className="w-4 h-4 mr-2" />
                                     导出 XML
                                 </Button>
-                                <Button variant="destructive" size="sm" onClick={() => {
-                                    if (confirm("确定要清空吗？这将丢失当前所有进度。")) {
-                                        clearProject();
-                                    }
-                                }}>
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    清空
-                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="sm">
+                                            <FilePlus className="w-4 h-4 mr-2" />
+                                            翻译新文件
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>确认开始新文件？</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                这将清空当前所有进度，确定要继续吗？
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>取消</AlertDialogCancel>
+                                            <AlertDialogAction onClick={clearProject}>确认</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </>
                         )}
                         <a href="https://github.com" target="_blank" rel="noreferrer" className="ml-2 text-muted-foreground hover:text-foreground">

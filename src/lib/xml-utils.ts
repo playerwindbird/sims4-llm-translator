@@ -79,9 +79,10 @@ export function generateXML(
         );
 
         // Replace the content inside <Dest>...</Dest> with the new translation
-        // We use a function to replacement to avoid issues with special patterns in the replacement string
+        // If translation is empty, use &#32; (space entity) as requested
         resultXML = resultXML.replace(regex, (_, prefix, _oldContent, suffix) => {
-            return `${prefix}${translation}${suffix}`;
+            const finalTranslation = translation === "" ? "&#32;" : translation;
+            return `${prefix}${finalTranslation}${suffix}`;
         });
     }
 

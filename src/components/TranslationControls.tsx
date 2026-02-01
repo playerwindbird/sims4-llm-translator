@@ -44,6 +44,7 @@ export function TranslationControls({
 }: TranslationControlsProps) {
     const [mode, setMode] = useState<"manual" | "auto">("manual");
     const [sourceJsonKey, setSourceJsonKey] = useState(0); // Used to trigger source JSON refresh
+    const [isSourceJsonRefreshing, setIsSourceJsonRefreshing] = useState(false); // Animation state for source JSON refresh
 
     const [jsonInput, setJsonInput] = useState("");
     const [isCopied, setIsCopied] = useState(false);
@@ -62,6 +63,10 @@ export function TranslationControls({
     const [animationKey, setAnimationKey] = useState(0); // Used to force animation restart
     const entryDeltaTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const prevProcessedCountRef = useRef<number | null>(null);
+
+    // Source JSON refresh animation refs
+    const sourceJsonRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const sourceJsonAnimationEndTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // API test state
     const [isTestingApi, setIsTestingApi] = useState(false);
@@ -154,13 +159,41 @@ export function TranslationControls({
         prevProcessedCountRef.current = processedCount;
     }, [processedCount]);
 
+    // Trigger refresh animation for source JSON with debounce
+    const triggerSourceJsonRefresh = () => {
+        // Always update the key to refresh content immediately
+        setSourceJsonKey(prev => prev + 1);
+
+        // Clear any pending animation start timeout
+        if (sourceJsonRefreshTimeoutRef.current) {
+            clearTimeout(sourceJsonRefreshTimeoutRef.current);
+        }
+        // Clear any pending animation end timeout
+        if (sourceJsonAnimationEndTimeoutRef.current) {
+            clearTimeout(sourceJsonAnimationEndTimeoutRef.current);
+        }
+
+        // Reset animation state first to prepare for new animation
+        setIsSourceJsonRefreshing(false);
+
+        // Debounce: wait a short time before starting animation
+        // This prevents flickering during rapid changes
+        sourceJsonRefreshTimeoutRef.current = setTimeout(() => {
+            setIsSourceJsonRefreshing(true);
+            // Reset animation state after animation completes
+            sourceJsonAnimationEndTimeoutRef.current = setTimeout(() => {
+                setIsSourceJsonRefreshing(false);
+            }, 600);
+        }, 150);
+    };
+
     const handleApplyManual = () => {
         try {
             if (!jsonInput.trim()) return;
             onApplyTranslations(jsonInput);
             setJsonInput("");
             // Refresh source JSON after applying translations
-            setSourceJsonKey(prev => prev + 1);
+            triggerSourceJsonRefresh();
         } catch (e) {
             alert("无效的 JSON 格式");
         }
@@ -370,7 +403,7 @@ export function TranslationControls({
                                 onChange={(e) => {
                                     onUpdateSettings({ manualBatchSize: Number(e.target.value) });
                                     // Refresh source JSON when batch size changes
-                                    setSourceJsonKey(prev => prev + 1);
+                                    triggerSourceJsonRefresh();
                                 }}
                             />
                         </div>
@@ -408,7 +441,7 @@ export function TranslationControls({
                                     key={sourceJsonKey}
                                     readOnly
                                     value={generateSourceJson()}
-                                    className="h-24 font-mono text-xs bg-muted"
+                                    className={`h-24 font-mono text-xs bg-muted ${isSourceJsonRefreshing ? 'source-json-refresh-animation' : ''}`}
                                 />
                                 <Button variant="outline" size="icon" className="h-24 w-12 shrink-0" onClick={handleCopy}>
                                     {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}

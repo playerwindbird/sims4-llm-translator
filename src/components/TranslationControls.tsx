@@ -63,6 +63,10 @@ export function TranslationControls({
     const entryDeltaTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const prevProcessedCountRef = useRef<number | null>(null);
 
+    // API test state
+    const [isTestingApi, setIsTestingApi] = useState(false);
+    const [apiTestResult, setApiTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
     const generateSourceJson = () => {
         const batchSize = settings.manualBatchSize || 50;
         // Only get untranslated items
@@ -293,6 +297,31 @@ export function TranslationControls({
         onClearTranslations();
     };
 
+    const handleTestApi = async () => {
+        setIsTestingApi(true);
+        setApiTestResult(null);
+
+        try {
+            const response = await fetch(`${settings.apiBaseUrl}/models`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${settings.apiKey}`
+                }
+            });
+
+            if (response.ok) {
+                setApiTestResult({ success: true, message: "API 连接成功！" });
+            } else {
+                const err = await response.text();
+                setApiTestResult({ success: false, message: `连接失败: ${response.status} ${err.slice(0, 100)}` });
+            }
+        } catch (e: any) {
+            setApiTestResult({ success: false, message: `连接失败: ${e.message}` });
+        } finally {
+            setIsTestingApi(false);
+        }
+    };
+
     return (
         <Card className="w-full">
             <CardHeader>
@@ -468,13 +497,37 @@ export function TranslationControls({
 
                         <div className="space-y-2">
                             <Label>API 密钥</Label>
-                            <Input
-                                type="password"
-                                value={settings.apiKey}
-                                onChange={(e) => onUpdateSettings({ apiKey: e.target.value })}
-                                placeholder="sk-..."
-                                disabled={isTranslating}
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    type="password"
+                                    value={settings.apiKey}
+                                    onChange={(e) => onUpdateSettings({ apiKey: e.target.value })}
+                                    placeholder="sk-..."
+                                    disabled={isTranslating}
+                                    className="flex-1"
+                                />
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!settings.apiKey || !settings.apiBaseUrl || isTranslating || isTestingApi}
+                                    onClick={handleTestApi}
+                                    className="h-10 px-4 shrink-0"
+                                >
+                                    {isTestingApi ? (
+                                        <span className="flex items-center">
+                                            <span className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
+                                            测试中
+                                        </span>
+                                    ) : (
+                                        "测试"
+                                    )}
+                                </Button>
+                            </div>
+                            {apiTestResult && (
+                                <p className={`text-xs ${apiTestResult.success ? 'text-green-500' : 'text-red-500'}`}>
+                                    {apiTestResult.message}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">

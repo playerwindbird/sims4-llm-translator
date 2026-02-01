@@ -173,7 +173,7 @@ export function TranslationControls({
         abortReasonRef.current = null;
 
         try {
-            const batchSize = settings.batchSize || 50;
+            const batchSize = settings.batchSize || 10;
             const totalItems = items.length;
             const totalBatches = Math.ceil(totalItems / batchSize);
 
@@ -335,7 +335,7 @@ export function TranslationControls({
                             </div>
                             <Slider
                                 min={1}
-                                max={100}
+                                max={1000}
                                 step={1}
                                 value={settings.manualBatchSize || 50}
                                 onChange={(e) => {
@@ -501,12 +501,12 @@ export function TranslationControls({
 
                         <div className="space-y-3 pt-2">
                             <div className="flex items-center justify-between">
-                                <Label>一次性处理条目数</Label>
+                                <Label>单批处理条目数</Label>
                                 <span className="text-sm font-mono text-muted-foreground">{settings.batchSize}</span>
                             </div>
                             <Slider
                                 min={1}
-                                max={100}
+                                max={1000}
                                 step={1}
                                 value={settings.batchSize}
                                 onChange={(e) => onUpdateSettings({ batchSize: Number(e.target.value) })}

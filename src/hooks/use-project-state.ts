@@ -43,7 +43,7 @@ export function useProjectState(): ProjectState {
         apiKey: "",
         apiBaseUrl: "https://api.openai.com/v1",
         model: "gpt-3.5-turbo",
-        batchSize: 50,
+        batchSize: 10,
         manualBatchSize: 50,
         customPrompt: DEFAULT_PROMPT,
         manualPrompt: DEFAULT_PROMPT,

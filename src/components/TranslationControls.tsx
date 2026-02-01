@@ -321,7 +321,7 @@ export function TranslationControls({
                 </div>
                 <CardDescription>
                     {mode === "manual"
-                        ? "复制 JSON，外部翻译后，将结果粘贴回来。"
+                        ? "由于AI单次处理长度上限，手动模式需要分批处理，拖动选择复制条目数，复制提示词和源JSON，外部翻译后，将结果黏贴回来，进行下一批"
                         : "使用兼容的 LLM API 自动翻译。"}
                 </CardDescription>
             </CardHeader>
@@ -373,7 +373,7 @@ export function TranslationControls({
                         </div>
 
                         <div className="space-y-2">
-                            <Label>复制源 JSON</Label>
+                            <Label>复制源 JSON<span className="text-muted-foreground text-xs font-normal">({Math.min(settings.manualBatchSize || 50, items.filter(item => !translations[item.id] || translations[item.id].trim() === '').length)}条)</span></Label>
                             <div className="flex gap-2">
                                 <Textarea
                                     key={sourceJsonKey}

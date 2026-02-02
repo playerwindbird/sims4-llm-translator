@@ -4,34 +4,46 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Upload } from "lucide-react";
 
 interface XMLUploaderProps {
-    onUpload: (content: string) => void;
+    onUpload: (filesData: { fileName: string; content: string }[]) => void;
 }
 
 export function XMLUploader({ onUpload }: XMLUploaderProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const handleFiles = async (fileList: FileList) => {
+        const filesData: { fileName: string; content: string }[] = [];
+
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList[i];
+            const content = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target?.result as string);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+            filesData.push({
+                fileName: file.name,
+                content,
+            });
+        }
+
+        if (filesData.length > 0) {
+            onUpload(filesData);
+        }
+    };
+
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target?.result as string;
-                onUpload(content);
-            };
-            reader.readAsText(file);
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            handleFiles(files);
         }
     };
 
     const handleDrop = (event: React.DragEvent) => {
         event.preventDefault();
-        const file = event.dataTransfer.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target?.result as string;
-                onUpload(content);
-            };
-            reader.readAsText(file);
+        const files = event.dataTransfer.files;
+        if (files && files.length > 0) {
+            handleFiles(files);
         }
     };
 
@@ -48,7 +60,8 @@ export function XMLUploader({ onUpload }: XMLUploaderProps) {
                 <div className="text-center space-y-1">
                     <h3 className="text-lg font-semibold">上传 Sims 4 XML</h3>
                     <p className="text-sm text-muted-foreground">
-                        将 xml 文件拖拽至此，或点击上传。
+                        将 xml 文件拖拽至此，或点击上传。<br />
+                        <span className="text-primary">支持同时选择多个文件</span>
                     </p>
                 </div>
                 <input
@@ -56,6 +69,7 @@ export function XMLUploader({ onUpload }: XMLUploaderProps) {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     accept=".xml"
+                    multiple
                     className="hidden"
                 />
                 <Button variant="outline">选择文件</Button>

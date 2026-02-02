@@ -1,17 +1,28 @@
 import { useState, useEffect } from "react";
-import { type ParsedItem, parseXML } from "@/lib/xml-utils";
+import { type ParsedItem, type ParsedData, parseXML } from "@/lib/xml-utils";
 
-export interface ProjectState {
-    xmlContent: string | null;
+// 单个文件的数据结构
+export interface FileData {
+    fileName: string;
+    xmlContent: string;
     parsedItems: ParsedItem[];
     translations: Record<string, string>;
+}
+
+export interface ProjectState {
+    files: FileData[];
+    // 兼容性：合并所有文件的 items 和 translations
+    allParsedItems: ParsedItem[];
+    allTranslations: Record<string, string>;
     settings: ProjectSettings;
     isLoading: boolean;
-    setXmlContent: (content: string) => Promise<void>;
+    addFiles: (filesData: { fileName: string; content: string }[]) => Promise<void>;
     updateTranslation: (id: string, value: string) => void;
     updateSettings: (settings: Partial<ProjectSettings>) => void;
     clearProject: () => void;
     clearTranslations: () => void;
+    // 导出单个文件
+    getFileExportData: (fileIndex: number) => { fileName: string; xmlContent: string; translations: Record<string, string> } | null;
 }
 
 export interface ProjectSettings {
@@ -36,9 +47,7 @@ const STORAGE_KEY = "sims4-translator-project";
 
 export function useProjectState(): ProjectState {
     const [isHydrated, setIsHydrated] = useState(false);
-    const [xmlContent, setXmlContentState] = useState<string | null>(null);
-    const [parsedItems, setParsedItems] = useState<ParsedItem[]>([]);
-    const [translations, setTranslations] = useState<Record<string, string>>({});
+    const [files, setFiles] = useState<FileData[]>([]);
     const [settings, setSettings] = useState<ProjectSettings>({
         apiKey: "",
         apiBaseUrl: "https://api.openai.com/v1",
@@ -49,15 +58,31 @@ export function useProjectState(): ProjectState {
         manualPrompt: DEFAULT_PROMPT,
     });
 
+    // 计算合并后的 items 和 translations
+    const allParsedItems = files.flatMap(f => f.parsedItems);
+    const allTranslations = files.reduce<Record<string, string>>((acc, file) => {
+        return { ...acc, ...file.translations };
+    }, {});
+
     // Hydrate from localStorage
     useEffect(() => {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 const data = JSON.parse(stored);
-                setXmlContentState(data.xmlContent || null);
-                setParsedItems(data.parsedItems || []);
-                setTranslations(data.translations || {});
+                // 兼容旧版本的单文件数据
+                if (data.xmlContent && !data.files) {
+                    // 旧版本数据迁移
+                    const legacyFile: FileData = {
+                        fileName: "legacy.xml",
+                        xmlContent: data.xmlContent,
+                        parsedItems: data.parsedItems || [],
+                        translations: data.translations || {},
+                    };
+                    setFiles([legacyFile]);
+                } else if (data.files) {
+                    setFiles(data.files || []);
+                }
                 setSettings((prev) => ({ ...prev, ...(data.settings || {}) }));
             }
         } catch (e) {
@@ -72,27 +97,29 @@ export function useProjectState(): ProjectState {
         if (!isHydrated) return;
 
         const stateToSave = {
-            xmlContent,
-            parsedItems,
-            translations,
+            files,
             settings,
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-    }, [xmlContent, parsedItems, translations, settings, isHydrated]);
+    }, [files, settings, isHydrated]);
 
-    const setXmlContent = async (content: string) => {
+    const addFiles = async (filesData: { fileName: string; content: string }[]) => {
         try {
-            const { items } = await parseXML(content);
-            setXmlContentState(content);
-            setParsedItems(items);
-
-            // Initialize translations with existing Dest values if not already present
-            // Or maybe we should keep existing dests as "current translation"
-            const initialTranslations: Record<string, string> = {};
-            items.forEach((item) => {
-                initialTranslations[item.id] = "";
-            });
-            setTranslations(initialTranslations);
+            const newFiles: FileData[] = [];
+            for (const { fileName, content } of filesData) {
+                const { items } = await parseXML(content, fileName);
+                const initialTranslations: Record<string, string> = {};
+                items.forEach((item) => {
+                    initialTranslations[item.id] = "";
+                });
+                newFiles.push({
+                    fileName,
+                    xmlContent: content,
+                    parsedItems: items,
+                    translations: initialTranslations,
+                });
+            }
+            setFiles(prev => [...prev, ...newFiles]);
         } catch (e) {
             console.error("Failed to parse XML", e);
             throw e;
@@ -100,9 +127,19 @@ export function useProjectState(): ProjectState {
     };
 
     const updateTranslation = (id: string, value: string) => {
-        setTranslations((prev) => ({
-            ...prev,
-            [id]: value,
+        setFiles(prev => prev.map(file => {
+            // 检查这个 id 是否属于这个文件
+            const hasId = file.parsedItems.some(item => item.id === id);
+            if (hasId) {
+                return {
+                    ...file,
+                    translations: {
+                        ...file.translations,
+                        [id]: value,
+                    },
+                };
+            }
+            return file;
         }));
     };
 
@@ -111,30 +148,44 @@ export function useProjectState(): ProjectState {
     };
 
     const clearProject = () => {
-        setXmlContentState(null);
-        setParsedItems([]);
-        setTranslations({});
+        setFiles([]);
         // We typically want to keep settings (API keys etc) even if clearing the project file
     };
 
     const clearTranslations = () => {
-        const initialTranslations: Record<string, string> = {};
-        parsedItems.forEach((item) => {
-            initialTranslations[item.id] = "";
-        });
-        setTranslations(initialTranslations);
+        setFiles(prev => prev.map(file => {
+            const initialTranslations: Record<string, string> = {};
+            file.parsedItems.forEach((item) => {
+                initialTranslations[item.id] = "";
+            });
+            return {
+                ...file,
+                translations: initialTranslations,
+            };
+        }));
+    };
+
+    const getFileExportData = (fileIndex: number) => {
+        const file = files[fileIndex];
+        if (!file) return null;
+        return {
+            fileName: file.fileName,
+            xmlContent: file.xmlContent,
+            translations: file.translations,
+        };
     };
 
     return {
-        xmlContent,
-        parsedItems,
-        translations,
+        files,
+        allParsedItems,
+        allTranslations,
         settings,
         isLoading: !isHydrated,
-        setXmlContent,
+        addFiles,
         updateTranslation,
         updateSettings,
         clearProject,
         clearTranslations,
+        getFileExportData,
     };
 }

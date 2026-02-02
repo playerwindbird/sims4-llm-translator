@@ -6,6 +6,7 @@ export interface ParsedItem {
 
 export interface ParsedData {
     items: ParsedItem[];
+    fileName: string;
 }
 
 /**
@@ -22,7 +23,7 @@ export interface ParsedData {
  *   </Content>
  * </STBLXMLResources>
  */
-export async function parseXML(fileContent: string): Promise<ParsedData> {
+export async function parseXML(fileContent: string, fileName: string = "unknown.xml"): Promise<ParsedData> {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(fileContent, "text/xml");
 
@@ -49,7 +50,7 @@ export async function parseXML(fileContent: string): Promise<ParsedData> {
         }
     }
 
-    return { items };
+    return { items, fileName };
 }
 
 /**

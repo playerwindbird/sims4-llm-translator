@@ -4,7 +4,7 @@ import { XMLUploader } from "@/components/XMLUploader";
 import { TranslationEditor } from "@/components/TranslationEditor";
 import { TranslationControls } from "@/components/TranslationControls";
 import { Button } from "@/components/ui/button";
-import { Download, FilePlus, Github } from "lucide-react";
+import { Download, FilePlus, Github, FileDown, Files } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -16,19 +16,27 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function App() {
     const {
-        xmlContent,
-        parsedItems,
-        translations,
+        files,
+        allParsedItems,
+        allTranslations,
         settings,
         isLoading,
-        setXmlContent,
+        addFiles,
         updateTranslation,
         updateSettings,
         clearProject,
         clearTranslations,
+        getFileExportData,
     } = useProjectState();
 
     const handleApplyTranslations = (jsonString: string) => {
@@ -45,15 +53,19 @@ export function App() {
         }
     };
 
-    const handleExport = () => {
-        if (!xmlContent) return;
+    const handleExportSingle = (fileIndex: number) => {
+        const fileData = getFileExportData(fileIndex);
+        if (!fileData) return;
+
         try {
-            const newXML = generateXML(xmlContent, translations);
+            const newXML = generateXML(fileData.xmlContent, fileData.translations);
             const blob = new Blob([newXML], { type: "text/xml" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "translated_output.xml"; // Should probably use original name + suffix if possible, but we didn't store filename
+            // 使用原始文件名，添加 _translated 后缀
+            const baseName = fileData.fileName.replace(/\.xml$/i, "");
+            a.download = `${baseName}_translated.xml`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -64,6 +76,12 @@ export function App() {
         }
     };
 
+    const handleExportAll = () => {
+        files.forEach((_, index) => {
+            handleExportSingle(index);
+        });
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
@@ -71,6 +89,8 @@ export function App() {
             </div>
         );
     }
+
+    const hasFiles = files.length > 0;
 
     return (
         <div className="min-h-screen bg-background font-sans">
@@ -81,15 +101,47 @@ export function App() {
                             S4
                         </div>
                         <h1 className="text-xl font-bold tracking-tight">Sims 4 翻译助手</h1>
+                        {hasFiles && (
+                            <span className="text-sm text-muted-foreground ml-2">
+                                ({files.length} 个文件)
+                            </span>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {xmlContent && (
+                        {hasFiles && (
                             <>
-                                <Button variant="outline" size="sm" onClick={handleExport}>
-                                    <Download className="w-4 h-4 mr-2" />
-                                    导出 XML
-                                </Button>
+                                {files.length === 1 ? (
+                                    <Button variant="outline" size="sm" onClick={() => handleExportSingle(0)}>
+                                        <Download className="w-4 h-4 mr-2" />
+                                        导出 XML
+                                    </Button>
+                                ) : (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="sm">
+                                                <Download className="w-4 h-4 mr-2" />
+                                                导出 XML
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="max-h-80 overflow-auto">
+                                            <DropdownMenuItem onClick={handleExportAll}>
+                                                <Files className="w-4 h-4 mr-2" />
+                                                导出全部 ({files.length} 个文件)
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            {files.map((file, index) => (
+                                                <DropdownMenuItem
+                                                    key={index}
+                                                    onClick={() => handleExportSingle(index)}
+                                                >
+                                                    <FileDown className="w-4 h-4 mr-2" />
+                                                    {file.fileName}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <Button variant="ghost" size="sm">
@@ -120,7 +172,7 @@ export function App() {
             </header>
 
             <main className="container mx-auto py-8 px-4">
-                {!xmlContent ? (
+                {!hasFiles ? (
                     <div className="flex flex-col items-center justify-center py-20 animate-in fade-in slide-in-from-bottom-5 duration-500">
                         <div className="text-center mb-8 space-y-2 max-w-lg">
                             <h1 className="text-4xl font-extrabold lg:text-5xl tracking-tight">
@@ -130,15 +182,15 @@ export function App() {
                                 上传 XML 文件，校验文本，并使用 AI 极速完成翻译。
                             </p>
                         </div>
-                        <XMLUploader onUpload={setXmlContent} />
+                        <XMLUploader onUpload={addFiles} />
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-1 space-y-6">
                             <div className="sticky top-24 space-y-6">
                                 <TranslationControls
-                                    items={parsedItems}
-                                    translations={translations}
+                                    items={allParsedItems}
+                                    translations={allTranslations}
                                     settings={settings}
                                     onUpdateSettings={updateSettings}
                                     onApplyTranslations={handleApplyTranslations}
@@ -148,8 +200,8 @@ export function App() {
                         </div>
                         <div className="lg:col-span-2">
                             <TranslationEditor
-                                items={parsedItems}
-                                translations={translations}
+                                items={allParsedItems}
+                                translations={allTranslations}
                                 onTranslationChange={updateTranslation}
                             />
                         </div>

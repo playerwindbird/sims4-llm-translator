@@ -200,6 +200,7 @@ export function App() {
                         </div>
                         <div className="lg:col-span-2">
                             <TranslationEditor
+                                files={files}
                                 items={allParsedItems}
                                 translations={allTranslations}
                                 onTranslationChange={updateTranslation}

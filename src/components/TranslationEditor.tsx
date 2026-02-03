@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { ParsedItem } from "@/lib/xml-utils";
+import type { FileData } from "@/hooks/use-project-state";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileText, Files } from "lucide-react";
 
 
 interface TranslationEditorProps {
+    files: FileData[];
     items: ParsedItem[];
     translations: Record<string, string>;
     onTranslationChange: (id: string, value: string) => void;
@@ -75,21 +78,23 @@ function PaginationControls({
     );
 }
 
-export function TranslationEditor({
+function ItemsList({
     items,
     translations,
     onTranslationChange,
-}: TranslationEditorProps) {
+}: {
+    items: ParsedItem[];
+    translations: Record<string, string>;
+    onTranslationChange: (id: string, value: string) => void;
+}) {
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Reset loop if items change (e.g. new file loaded)
+    // 当 items 改变时重置页码
     useEffect(() => {
         setCurrentPage(1);
     }, [items]);
 
     const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
-
-    // Ensure current page is valid
     const safeCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
 
     if (safeCurrentPage !== currentPage) {
@@ -114,18 +119,11 @@ export function TranslationEditor({
             <div className="text-center text-muted-foreground py-10">
                 没有可翻译的项目。
             </div>
-        )
+        );
     }
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between pb-4">
-                <h2 className="text-2xl font-bold">翻译编辑器</h2>
-                <div className="text-sm text-muted-foreground">
-                    共 {items.length} 条目
-                </div>
-            </div>
-
             <PaginationControls
                 currentPage={safeCurrentPage}
                 totalPages={totalPages}
@@ -172,4 +170,104 @@ export function TranslationEditor({
     );
 }
 
+export function TranslationEditor({
+    files,
+    items,
+    translations,
+    onTranslationChange,
+}: TranslationEditorProps) {
+    const [activeTab, setActiveTab] = useState("all");
 
+    // 获取当前标签页对应的 items
+    const currentItems = useMemo(() => {
+        if (activeTab === "all") {
+            return items;
+        }
+        const fileIndex = parseInt(activeTab, 10);
+        const file = files[fileIndex];
+        return file ? file.parsedItems : [];
+    }, [activeTab, items, files]);
+
+    // 获取当前标签页的条目总数
+    const currentItemCount = currentItems.length;
+
+    // 只显示单个文件时不需要标签页
+    const showTabs = files.length > 1;
+
+    // 截取文件名（去掉路径和扩展名），最多显示20个字符
+    const getShortFileName = (fileName: string) => {
+        const name = fileName.replace(/\.[^/.]+$/, ""); // 去掉扩展名
+        return name.length > 20 ? name.substring(0, 17) + "..." : name;
+    };
+
+    if (items.length === 0) {
+        return (
+            <div className="text-center text-muted-foreground py-10">
+                没有可翻译的项目。
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between pb-4">
+                <h2 className="text-2xl font-bold">翻译编辑器</h2>
+                <div className="text-sm text-muted-foreground">
+                    共 {currentItemCount} 条目
+                </div>
+            </div>
+
+            {showTabs ? (
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <div className="overflow-x-auto pb-2">
+                        <TabsList variant="line" className="w-auto min-w-full flex-nowrap">
+                            <TabsTrigger value="all" className="gap-2 shrink-0">
+                                <Files className="h-4 w-4" />
+                                <span>全部</span>
+                                <span className="ml-1 rounded-full bg-muted-foreground/20 px-2 py-0.5 text-xs">
+                                    {items.length}
+                                </span>
+                            </TabsTrigger>
+                            {files.map((file, index) => (
+                                <TabsTrigger
+                                    key={index}
+                                    value={index.toString()}
+                                    className="gap-2 shrink-0"
+                                    title={file.fileName}
+                                >
+                                    <FileText className="h-4 w-4" />
+                                    <span>{getShortFileName(file.fileName)}</span>
+                                    <span className="ml-1 rounded-full bg-muted-foreground/20 px-2 py-0.5 text-xs">
+                                        {file.parsedItems.length}
+                                    </span>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </div>
+                    <TabsContent value="all">
+                        <ItemsList
+                            items={items}
+                            translations={translations}
+                            onTranslationChange={onTranslationChange}
+                        />
+                    </TabsContent>
+                    {files.map((file, index) => (
+                        <TabsContent key={index} value={index.toString()}>
+                            <ItemsList
+                                items={file.parsedItems}
+                                translations={translations}
+                                onTranslationChange={onTranslationChange}
+                            />
+                        </TabsContent>
+                    ))}
+                </Tabs>
+            ) : (
+                <ItemsList
+                    items={items}
+                    translations={translations}
+                    onTranslationChange={onTranslationChange}
+                />
+            )}
+        </div>
+    );
+}

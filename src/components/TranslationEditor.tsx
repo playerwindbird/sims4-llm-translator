@@ -14,6 +14,8 @@ interface TranslationEditorProps {
     items: ParsedItem[];
     translations: Record<string, string>;
     onTranslationChange: (id: string, value: string) => void;
+    activeFileTab: string;
+    onActiveFileTabChange: (tab: string) => void;
 }
 
 const ITEMS_PER_PAGE = 100;
@@ -175,18 +177,18 @@ export function TranslationEditor({
     items,
     translations,
     onTranslationChange,
+    activeFileTab,
+    onActiveFileTabChange,
 }: TranslationEditorProps) {
-    const [activeTab, setActiveTab] = useState("all");
-
     // 获取当前标签页对应的 items
     const currentItems = useMemo(() => {
-        if (activeTab === "all") {
+        if (activeFileTab === "all") {
             return items;
         }
-        const fileIndex = parseInt(activeTab, 10);
+        const fileIndex = parseInt(activeFileTab, 10);
         const file = files[fileIndex];
         return file ? file.parsedItems : [];
-    }, [activeTab, items, files]);
+    }, [activeFileTab, items, files]);
 
     // 获取当前标签页的条目总数
     const currentItemCount = currentItems.length;
@@ -218,7 +220,7 @@ export function TranslationEditor({
             </div>
 
             {showTabs ? (
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <Tabs value={activeFileTab} onValueChange={onActiveFileTabChange} className="w-full">
                     <div className="overflow-x-auto pb-2">
                         <TabsList variant="line" className="w-auto min-w-full flex-nowrap">
                             <TabsTrigger value="all" className="gap-2 shrink-0">

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import type { ParsedItem } from "@/lib/xml-utils";
 import type { ProjectSettings } from "@/hooks/use-project-state";
 import { DEFAULT_PROMPT } from "@/hooks/use-project-state";
-import { Copy, Check, Play, Pause, X, RotateCcw } from "lucide-react";
+import { Copy, Check, Play, Pause, X, RotateCcw, FileText, Files, ChevronDown } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -20,27 +20,39 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Assuming Tabs are available or I need to implement them/install them.
 // Wait, I saw components list earlier, I don't recall seeing 'tabs.tsx'.
 // I should check. If not, I'll use simple button toggles.
 
 interface TranslationControlsProps {
+    files: { fileName: string; parsedItems: ParsedItem[] }[];
     items: ParsedItem[];
     translations: Record<string, string>; // Added prop
     settings: ProjectSettings;
     onUpdateSettings: (settings: Partial<ProjectSettings>) => void;
     onApplyTranslations: (jsonString: string) => void;
     onClearTranslations: () => void;
+    activeFileTab: string;
+    onActiveFileTabChange: (tab: string) => void;
 }
 
 export function TranslationControls({
+    files,
     items,
     translations, // Added
     settings,
     onUpdateSettings,
     onApplyTranslations,
     onClearTranslations,
+    activeFileTab,
+    onActiveFileTabChange,
 }: TranslationControlsProps) {
     const [mode, setMode] = useState<"manual" | "auto">("manual");
     const [sourceJsonKey, setSourceJsonKey] = useState(0); // Used to trigger source JSON refresh
@@ -72,10 +84,38 @@ export function TranslationControls({
     const [isTestingApi, setIsTestingApi] = useState(false);
     const [apiTestResult, setApiTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
+    // 根据 activeFileTab 获取当前文件的 items
+    const currentItems = useMemo(() => {
+        if (activeFileTab === "all") {
+            return items;
+        }
+        const fileIndex = parseInt(activeFileTab, 10);
+        const file = files[fileIndex];
+        return file ? file.parsedItems : [];
+    }, [activeFileTab, items, files]);
+
+    // 获取当前文件名用于显示
+    const currentFileName = useMemo(() => {
+        if (activeFileTab === "all") {
+            return "全部文件";
+        }
+        const fileIndex = parseInt(activeFileTab, 10);
+        const file = files[fileIndex];
+        if (!file) return "全部文件";
+        const name = file.fileName.replace(/\.[^/.]+$/, ""); // 去掉扩展名
+        return name.length > 15 ? name.substring(0, 12) + "..." : name;
+    }, [activeFileTab, files]);
+
+    // 获取短文件名用于下拉菜单
+    const getShortFileName = (fileName: string) => {
+        const name = fileName.replace(/\.[^/.]+$/, ""); // 去掉扩展名
+        return name.length > 20 ? name.substring(0, 17) + "..." : name;
+    };
+
     const generateSourceJson = () => {
         const batchSize = settings.manualBatchSize || 50;
-        // Only get untranslated items
-        const untranslatedItems = items.filter(item => !translations[item.id] || translations[item.id].trim() === '');
+        // Only get untranslated items from current file
+        const untranslatedItems = currentItems.filter(item => !translations[item.id] || translations[item.id].trim() === '');
         const batchItems = untranslatedItems.slice(0, batchSize);
 
         const obj: Record<string, string> = {};
@@ -114,9 +154,9 @@ export function TranslationControls({
         onUpdateSettings({ manualPrompt: value });
     };
 
-    // Calculate processed and pending counts
-    const processedCount = Object.values(translations).filter(t => t.trim() !== '').length;
-    const pendingCount = items.length - processedCount;
+    // Calculate processed and pending counts for current file
+    const processedCount = currentItems.filter(item => translations[item.id] && translations[item.id].trim() !== '').length;
+    const pendingCount = currentItems.length - processedCount;
 
     // Track changes in processed count and trigger animation
     useEffect(() => {
@@ -388,6 +428,52 @@ export function TranslationControls({
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+                {/* 文件选择器 - 只在有多个文件时显示 */}
+                {files.length > 1 && (
+                    <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border border-border/50">
+                        <span className="text-sm text-muted-foreground shrink-0">当前文件：</span>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="flex-1 justify-between gap-2 h-8"
+                                    disabled={isTranslating}
+                                >
+                                    <span className="flex items-center gap-2 truncate">
+                                        {activeFileTab === "all" ? (
+                                            <><Files className="h-4 w-4 shrink-0" /><span className="truncate">全部文件</span></>
+                                        ) : (
+                                            <><FileText className="h-4 w-4 shrink-0" /><span className="truncate">{currentFileName}</span></>
+                                        )}
+                                    </span>
+                                    <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="max-h-60 overflow-auto w-56">
+                                <DropdownMenuItem 
+                                    onClick={() => onActiveFileTabChange("all")}
+                                    className={activeFileTab === "all" ? "bg-accent" : ""}
+                                >
+                                    <Files className="h-4 w-4 mr-2" />
+                                    <span>全部文件</span>
+                                    <span className="ml-auto text-xs text-muted-foreground">{items.length}</span>
+                                </DropdownMenuItem>
+                                {files.map((file, index) => (
+                                    <DropdownMenuItem
+                                        key={index}
+                                        onClick={() => onActiveFileTabChange(index.toString())}
+                                        className={activeFileTab === index.toString() ? "bg-accent" : ""}
+                                    >
+                                        <FileText className="h-4 w-4 mr-2" />
+                                        <span className="truncate">{getShortFileName(file.fileName)}</span>
+                                        <span className="ml-auto text-xs text-muted-foreground">{file.parsedItems.length}</span>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                )}
                 {mode === "manual" ? (
                     <div className="space-y-4">
                         <div className="space-y-3 pt-2">
@@ -435,7 +521,7 @@ export function TranslationControls({
                         </div>
 
                         <div className="space-y-2">
-                            <Label>复制源 JSON<span className="text-muted-foreground text-xs font-normal">({Math.min(settings.manualBatchSize || 50, items.filter(item => !translations[item.id] || translations[item.id].trim() === '').length)}条)</span></Label>
+                            <Label>复制源 JSON<span className="text-muted-foreground text-xs font-normal">({Math.min(settings.manualBatchSize || 50, currentItems.filter(item => !translations[item.id] || translations[item.id].trim() === '').length)}条)</span></Label>
                             <div className="flex gap-2">
                                 <Textarea
                                     key={sourceJsonKey}

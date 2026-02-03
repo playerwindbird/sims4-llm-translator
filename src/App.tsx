@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useProjectState } from "@/hooks/use-project-state";
 import { generateXML } from "@/lib/xml-utils";
 import { XMLUploader } from "@/components/XMLUploader";
@@ -38,6 +39,9 @@ export function App() {
         clearTranslations,
         getFileExportData,
     } = useProjectState();
+
+    // 用于标签页和翻译工具的联动状态
+    const [activeFileTab, setActiveFileTab] = useState<string>("all");
 
     const handleApplyTranslations = (jsonString: string) => {
         try {
@@ -189,12 +193,15 @@ export function App() {
                         <div className="lg:col-span-1 space-y-6">
                             <div className="sticky top-24 space-y-6">
                                 <TranslationControls
+                                    files={files}
                                     items={allParsedItems}
                                     translations={allTranslations}
                                     settings={settings}
                                     onUpdateSettings={updateSettings}
                                     onApplyTranslations={handleApplyTranslations}
                                     onClearTranslations={clearTranslations}
+                                    activeFileTab={activeFileTab}
+                                    onActiveFileTabChange={setActiveFileTab}
                                 />
                             </div>
                         </div>
@@ -204,6 +211,8 @@ export function App() {
                                 items={allParsedItems}
                                 translations={allTranslations}
                                 onTranslationChange={updateTranslation}
+                                activeFileTab={activeFileTab}
+                                onActiveFileTabChange={setActiveFileTab}
                             />
                         </div>
                     </div>

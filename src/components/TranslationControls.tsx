@@ -227,6 +227,13 @@ export function TranslationControls({
         }, 150);
     };
 
+    // 当切换文件时触发源 JSON 刷新
+    useEffect(() => {
+        triggerSourceJsonRefresh();
+        // Reset processed count ref to avoid animation when switching files
+        prevProcessedCountRef.current = processedCount;
+    }, [activeFileTab]);
+
     const handleApplyManual = () => {
         try {
             if (!jsonInput.trim()) return;

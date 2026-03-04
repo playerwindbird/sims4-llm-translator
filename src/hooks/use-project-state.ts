@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { type ParsedItem, type ParsedData, parseXML } from "@/lib/xml-utils";
+import { type ParsedItem, parseXML } from "@/lib/xml-utils";
 
 // 单个文件的数据结构
 export interface FileData {

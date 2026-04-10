@@ -110,7 +110,11 @@ export function useProjectState(): ProjectState {
                 const { items } = await parseXML(content, fileName);
                 const initialTranslations: Record<string, string> = {};
                 items.forEach((item) => {
-                    initialTranslations[item.id] = "";
+                    if (item.source !== item.dest && item.dest.trim() !== "" && item.dest.trim() !== "&#32;") {
+                        initialTranslations[item.id] = item.dest;
+                    } else {
+                        initialTranslations[item.id] = "";
+                    }
                 });
                 newFiles.push({
                     fileName,

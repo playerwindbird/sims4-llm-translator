@@ -609,6 +609,7 @@ export function TranslationControls({
                                     placeholder="https://api.openai.com/v1"
                                     disabled={isTranslating}
                                 />
+                                <p className="text-xs text-muted-foreground">使用第三方中转时，地址通常需要以 <code className="font-mono bg-muted px-1 rounded">/v1</code> 结尾</p>
                             </div>
                             <div className="space-y-2">
                                 <Label>模型名称</Label>

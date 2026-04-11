@@ -292,7 +292,8 @@ export function TranslationControls({
                 const systemPrompt = settings.customPrompt || DEFAULT_PROMPT;
                 const userPrompt = `${sourceJson}`;
 
-                const response = await fetch(`${settings.apiBaseUrl}/chat/completions`, {
+                const requestUrl = `${settings.apiBaseUrl}/chat/completions`;
+                const response = await fetch(requestUrl, {
                     method: "POST",
                     signal: abortControllerRef.current?.signal,
                     headers: {
@@ -310,7 +311,7 @@ export function TranslationControls({
 
                 if (!response.ok) {
                     const err = await response.text();
-                    throw new Error(`Batch ${i + 1}/${totalBatches} failed: ${err}`);
+                    throw new Error(`Batch ${i + 1}/${totalBatches} failed (${requestUrl}): ${err}`);
                 }
 
                 const data = await response.json();
@@ -429,18 +430,22 @@ export function TranslationControls({
         setApiTestResult(null);
 
         try {
-            const models = await fetchModels();
-            setAvailableModels(models);
-            if (models.length > 0) {
-                setApiTestResult({ success: true, message: `API 连接成功！获取到 ${models.length} 个模型` });
-                if (!models.includes(settings.model)) {
-                    onUpdateSettings({ model: models[0] });
+            const requestUrl = `${settings.apiBaseUrl}/models`;
+            const response = await fetch(requestUrl, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${settings.apiKey}`
                 }
-            } else {
-                setApiTestResult({ success: true, message: "API 连接成功，但未找到模型列表" });
+            });
+
+            if (!response.ok) {
+                const err = await response.text();
+                throw new Error(`${response.status} ${err.slice(0, 200)}`);
             }
+
+            setApiTestResult({ success: true, message: "API 连接成功！" });
         } catch (e: any) {
-            setApiTestResult({ success: false, message: `连接失败: ${e.message}` });
+            setApiTestResult({ success: false, message: `连接失败 (${settings.apiBaseUrl}/models): ${e.message}` });
         } finally {
             setIsTestingApi(false);
         }

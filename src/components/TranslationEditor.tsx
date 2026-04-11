@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { ParsedItem } from "@/lib/xml-utils";
 import type { FileData } from "@/hooks/use-project-state";
 import { Textarea } from "@/components/ui/textarea";

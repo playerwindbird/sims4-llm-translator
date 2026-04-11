@@ -91,10 +91,7 @@ function ItemsList({
 }) {
     const [currentPage, setCurrentPage] = useState(1);
 
-    // 当 items 改变时重置页码
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [items]);
+
 
     const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
     const safeCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));

@@ -5,10 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { ParsedItem } from "@/lib/xml-utils";
 import type { ProjectSettings } from "@/hooks/use-project-state";
 import { DEFAULT_PROMPT } from "@/hooks/use-project-state";
-import { Copy, Check, Play, Pause, X, RotateCcw, FileText, Files, ChevronDown } from "lucide-react";
+import { Copy, Check, Play, Pause, X, RotateCcw, FileText, Files, ChevronDown, RefreshCw } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -82,6 +83,9 @@ export function TranslationControls({
 
     // API test state
     const [isTestingApi, setIsTestingApi] = useState(false);
+    // Model list state
+    const [availableModels, setAvailableModels] = useState<string[]>([]);
+    const [isFetchingModels, setIsFetchingModels] = useState(false);
     const [apiTestResult, setApiTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
     // 根据 activeFileTab 获取当前文件的 items
@@ -377,23 +381,63 @@ export function TranslationControls({
         onClearTranslations();
     };
 
+    const fetchModels = async (): Promise<string[]> => {
+        const response = await fetch(`${settings.apiBaseUrl}/models`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${settings.apiKey}`
+            }
+        });
+
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(`${response.status} ${err.slice(0, 100)}`);
+        }
+
+        const data = await response.json();
+        // OpenAI compatible format: { data: [{ id: "model-name" }, ...] }
+        const models: string[] = (data.data || [])
+            .map((m: any) => m.id || m.name || '')
+            .filter((id: string) => id)
+            .sort();
+        return models;
+    };
+
+    const handleFetchModels = async () => {
+        setIsFetchingModels(true);
+        try {
+            const models = await fetchModels();
+            setAvailableModels(models);
+            if (models.length === 0) {
+                setApiTestResult({ success: false, message: "未找到可用模型" });
+            } else {
+                setApiTestResult({ success: true, message: `获取到 ${models.length} 个模型` });
+                // If current model is not in the list, auto-select the first one
+                if (!models.includes(settings.model)) {
+                    onUpdateSettings({ model: models[0] });
+                }
+            }
+        } catch (e: any) {
+            setApiTestResult({ success: false, message: `获取模型失败: ${e.message}` });
+        } finally {
+            setIsFetchingModels(false);
+        }
+    };
+
     const handleTestApi = async () => {
         setIsTestingApi(true);
         setApiTestResult(null);
 
         try {
-            const response = await fetch(`${settings.apiBaseUrl}/models`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${settings.apiKey}`
+            const models = await fetchModels();
+            setAvailableModels(models);
+            if (models.length > 0) {
+                setApiTestResult({ success: true, message: `API 连接成功！获取到 ${models.length} 个模型` });
+                if (!models.includes(settings.model)) {
+                    onUpdateSettings({ model: models[0] });
                 }
-            });
-
-            if (response.ok) {
-                setApiTestResult({ success: true, message: "API 连接成功！" });
             } else {
-                const err = await response.text();
-                setApiTestResult({ success: false, message: `连接失败: ${response.status} ${err.slice(0, 100)}` });
+                setApiTestResult({ success: true, message: "API 连接成功，但未找到模型列表" });
             }
         } catch (e: any) {
             setApiTestResult({ success: false, message: `连接失败: ${e.message}` });
@@ -600,26 +644,15 @@ export function TranslationControls({
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>API 基础 URL</Label>
-                                <Input
-                                    value={settings.apiBaseUrl}
-                                    onChange={(e) => onUpdateSettings({ apiBaseUrl: e.target.value })}
-                                    placeholder="https://api.openai.com/v1"
-                                    disabled={isTranslating}
-                                />
-                                <p className="text-xs text-muted-foreground">使用第三方中转时，地址通常需要以 <code className="font-mono bg-muted px-1 rounded">/v1</code> 结尾</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>模型名称</Label>
-                                <Input
-                                    value={settings.model}
-                                    onChange={(e) => onUpdateSettings({ model: e.target.value })}
-                                    placeholder="gpt-3.5-turbo"
-                                    disabled={isTranslating}
-                                />
-                            </div>
+                        <div className="space-y-2">
+                            <Label>API 基础 URL</Label>
+                            <Input
+                                value={settings.apiBaseUrl}
+                                onChange={(e) => onUpdateSettings({ apiBaseUrl: e.target.value })}
+                                placeholder="https://api.openai.com/v1"
+                                disabled={isTranslating}
+                            />
+                            <p className="text-xs text-muted-foreground">使用第三方中转时，地址通常需要以 <code className="font-mono bg-muted px-1 rounded">/v1</code> 结尾</p>
                         </div>
 
                         <div className="space-y-2">
@@ -655,6 +688,48 @@ export function TranslationControls({
                                     {apiTestResult.message}
                                 </p>
                             )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>模型名称</Label>
+                            <div className="flex gap-2">
+                                {availableModels.length > 0 ? (
+                                    <Select
+                                        value={settings.model}
+                                        onValueChange={(value) => onUpdateSettings({ model: value })}
+                                        disabled={isTranslating}
+                                    >
+                                        <SelectTrigger className="w-full h-9">
+                                            <SelectValue placeholder="选择模型" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availableModels.map((model) => (
+                                                <SelectItem key={model} value={model}>
+                                                    {model}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input
+                                        value={settings.model}
+                                        onChange={(e) => onUpdateSettings({ model: e.target.value })}
+                                        placeholder="点击右侧按钮获取或手动填写"
+                                        disabled={isTranslating}
+                                    />
+                                )}
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-9 w-9 shrink-0"
+                                    disabled={!settings.apiKey || !settings.apiBaseUrl || isTranslating || isFetchingModels}
+                                    onClick={handleFetchModels}
+                                    title="获取模型列表"
+                                >
+                                    <RefreshCw className={`h-4 w-4 ${isFetchingModels ? 'animate-spin' : ''}`} />
+                                </Button>
+                            </div>
+                            <p className="text-xs text-muted-foreground">点击右侧按钮从服务商获取模型列表，也可直接手动填写模型名称</p>
                         </div>
 
                         <div className="space-y-2">

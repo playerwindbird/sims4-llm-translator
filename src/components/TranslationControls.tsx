@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import type { ParsedItem } from "@/lib/xml-utils";
 import type { ProjectSettings } from "@/hooks/use-project-state";
 import { DEFAULT_PROMPT } from "@/hooks/use-project-state";
@@ -86,7 +86,15 @@ export function TranslationControls({
     // Model list state
     const [availableModels, setAvailableModels] = useState<string[]>([]);
     const [isFetchingModels, setIsFetchingModels] = useState(false);
+    const [showModelList, setShowModelList] = useState(false);
     const [apiTestResult, setApiTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+    // 当 API URL 或 API 密钥变化时，清除已拉取的模型列表
+    useEffect(() => {
+        setAvailableModels([]);
+        setShowModelList(false);
+        setApiTestResult(null);
+    }, [settings.apiBaseUrl, settings.apiKey]);
 
     // 根据 activeFileTab 获取当前文件的 items
     const currentItems = useMemo(() => {
@@ -413,10 +421,7 @@ export function TranslationControls({
                 setApiTestResult({ success: false, message: "未找到可用模型" });
             } else {
                 setApiTestResult({ success: true, message: `获取到 ${models.length} 个模型` });
-                // If current model is not in the list, auto-select the first one
-                if (!models.includes(settings.model)) {
-                    onUpdateSettings({ model: models[0] });
-                }
+                setShowModelList(true);
             }
         } catch (e: any) {
             setApiTestResult({ success: false, message: `获取模型失败: ${e.message}` });
@@ -698,31 +703,13 @@ export function TranslationControls({
                         <div className="space-y-2">
                             <Label>模型名称</Label>
                             <div className="flex gap-2">
-                                {availableModels.length > 0 ? (
-                                    <Select
-                                        value={settings.model}
-                                        onValueChange={(value) => onUpdateSettings({ model: value })}
-                                        disabled={isTranslating}
-                                    >
-                                        <SelectTrigger className="w-full h-9">
-                                            <SelectValue placeholder="选择模型" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {availableModels.map((model) => (
-                                                <SelectItem key={model} value={model}>
-                                                    {model}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    <Input
-                                        value={settings.model}
-                                        onChange={(e) => onUpdateSettings({ model: e.target.value })}
-                                        placeholder="点击右侧按钮获取或手动填写"
-                                        disabled={isTranslating}
-                                    />
-                                )}
+                                <Input
+                                    value={settings.model}
+                                    onChange={(e) => onUpdateSettings({ model: e.target.value })}
+                                    placeholder="手动填写模型名称，或点击右侧按钮获取列表"
+                                    disabled={isTranslating}
+                                    className="flex-1"
+                                />
                                 <Button
                                     variant="outline"
                                     size="icon"
@@ -734,7 +721,39 @@ export function TranslationControls({
                                     <RefreshCw className={`h-4 w-4 ${isFetchingModels ? 'animate-spin' : ''}`} />
                                 </Button>
                             </div>
-                            <p className="text-xs text-muted-foreground">点击右侧按钮从服务商获取模型列表，也可直接手动填写模型名称</p>
+                            {/* 独立的模型列表展开区域 */}
+                            {availableModels.length > 0 && (
+                                <div className="space-y-1">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground w-full justify-between"
+                                        onClick={() => setShowModelList(!showModelList)}
+                                    >
+                                        <span>可用模型列表 ({availableModels.length})</span>
+                                        <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${showModelList ? 'rotate-180' : ''}`} />
+                                    </Button>
+                                    {showModelList && (
+                                        <div className="max-h-40 overflow-auto rounded-md border border-border bg-muted/30 p-1">
+                                            {availableModels.map((model) => (
+                                                <button
+                                                    key={model}
+                                                    className={`w-full text-left text-xs px-2 py-1.5 rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer truncate ${
+                                                        settings.model === model ? 'bg-accent text-accent-foreground font-medium' : 'text-foreground'
+                                                    }`}
+                                                    onClick={() => {
+                                                        onUpdateSettings({ model });
+                                                    }}
+                                                    title={model}
+                                                >
+                                                    {model}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            <p className="text-xs text-muted-foreground">可直接手动填写模型名称，或点击刷新按钮从服务商获取模型列表选择</p>
                         </div>
 
                         <div className="space-y-2">
